@@ -1,0 +1,33 @@
+\vspace*{-15.0mm}
+
+% \begin{center}
+% \Large{\bf\sf  FEM-BEM procedures for elastoplastic, thermo-viscoplasctic contact problems}                              \end{center}
+% \begin{center}
+%  Sergey Geyn
+% \end{center}
+ 
+ 
+ \begin{center}
+ \sf \large
+ \textbf{Abstract}
+ \end{center}
+
+\vspace*{-3.0mm}
+The main goal of this thesis is the extension and improvement of  existing methods for  describing and solving thermo-mechanical  problems involving the contact of bodies, plastic behavior as well as hypoelasto-viscoplasticity, which have an application in machining and  metal forming processes. Besides the finite element method (FEM) also the boundary element method (BEM) and the FEM/BEM coupling are investigated as discretization procedures.
+
+In Chapter 1 the quasistatic two-body elastoplastic contact problem with Coulomb friction is discretized using the FE/FE, BE/BE, and FE/BE coupling methods. The incremental loading procedure with Newton iterations on each time step is analyzed. Linearizations of the frictional contact and the plasticity terms as well as a description of the solution algorithms are given. As a further approach we also investigate a domain decomposition method, whereas the transmission conditions between elastic and plastic part in the work piece are incorporated via Lagrange multipliers. Furthermore additionally the distribution of temperature is modelled by a two-field approach. The above procedures are used to simulate benchmark problems in metal forming.
+
+In Chapter 2 the quasistatic one-body hypoelasto-viscoplasticity problem subjected to the Hart's model, describing  large viscoplastic and small elastic deformations, is discretized with FE and BE methods in space, using an updated Lagrange approach for the discretization in time. Here a fix point  procedure  on each time step is used. An explicit integration procedure of the constitutive material equations  as well as a description of the solution procedure are given.
+
+Furthermore, the thermo-mechanical  two-body hypoelasto-viscoplasticity contact problem with Coulomb friction  is discretized with FE/BE in space and with finite differences in time employing the updated Lagrange approach. This approach can be applied to simulate metal chipping.
+
+Our numerical algorithms are implemented as a library within the scientific package {\tt maiprogs} and are written in Fortran 95.
+
+The numerical computations are realized using different discretization procedures for benchmark problems   providing comparable results for FE, BE and FE/BE coupling methods.
+
+
+
+
+
+
+\textbf{Key words.} FE/BE coupling,  finite elements, boundary elements, frictional contact, penalty, Hart's model, updated Lagrange, large deformations

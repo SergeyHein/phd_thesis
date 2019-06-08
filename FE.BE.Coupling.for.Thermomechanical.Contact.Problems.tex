@@ -1,0 +1,339 @@
+\section{FE/BE coupling for thermoelastic contact problems}\label{sec:ThElContact}
+
+% The thermoelastic frictional contact problem was discussed in this paper. We derived the weak formulation for the coupled problem using BE discretization for the mechanical part and FE discretization for the thermal part. The operator splitting method, described in \cite{JoKl93}, \cite{WrMi94} was used for constructing the solution algorithm. We presented the backward Euler scheme for the time discretization yielding a fixed point iterations at each time step. Note, that according to \cite{JoKl93} one can apply the forward Euler scheme. In this case no fixed point iterations are needed. The main disadvantage of this approach in\cite{JoKl93} is that the time steps should be small enough to provide stability of the method. On the other hand, our approach with backward Euler is always stable.
+
+Extending the ideas of \cite{WrMi94}, \cite{SiMi92} we present a coupled thermoelastic formulation for contact problems with friction. The elastic material response is modelled with the boundary element (BE) method, whereas the finite element (FE) description is used for modeling the temperature field. We use constitutive equations for the normal and the tangential contact stress in terms of the penalty method, as well as constitutive equations for the heat flux on the contact boundary. As in \cite{WrMi94} we use the operator split techniques and present an iterative solution procedure for the coupled problem.
+
+In many industrial applications as metal forming, grinding and machining the contact interaction between a tool and a work piece plays a key role. Very often such processes can not be treated as an isothermic process. The temperature in the tool and the work piece changes much, which changes the physical properties of the bodies in contact. In that case thermo-effects can not be neglected and should be included in the simulation, \cite{JoKl93}, \cite{SiMi92}, \cite{WrMi94}.
+
+In Section \ref{sec:Weak} we present the continuous coupled thermo-elastic contact problem with friction and  derive its penalty weak formulation.  A penalty method for the mechanical contact is  described in Sections \ref{sec:ElPlContact:DiscretizationSolutionProcedure}, \ref{sec:ConstitutiveConditions:Discretization}. The  heat flow on the contact boundary is incorporated as in \cite{JoKl93}. The elastic material response is modelled with the boundary element (BE) method, whereas the finite element (FE) method is used for modeling the temperature field. The first order time derivative of temperature is discretized with finite differences. Finally, in Section \ref{sec:decomp} we decompose the problem into the mechanical and the thermo-part and give an iterative fix point procedure to solve the coupled problem. In every iteration an elastic contact problem is solved with BEM under fixed temperature assumption. The thermo-contribution to the stress tensor is taken to the right hand side and is incorporated in the BEM formulation with the use of Newton potentials, as it was done in Section \ref{sec:BEMBEM} for plastic terms. Then the temperature distribution is computed in the changed geometry.
+
+We mention that the plastic material behavior can be easily included in the algorithm using approaches described in Sections \ref{sec:FEMFEM}, \ref{sec:FEMBEM}, \ref{sec:BEMBEM}.
+
+% \subsection{Classical formulation} \label{sec:cont}
+\subsection{Weak formulation} \label{sec:Weak}
+The classical formulation \cite{JoKl93}, \cite{WrMi94} is given by
+\begin{equation} \label{ClassicalForm}
+  \begin{array}{cl}
+   \begin{array}{c}
+    \Div \bv{\sigma} (\bv{u}^i, T^i) = \given{\bv{f}}^i, \\ [1ex]
+    \dot T^i = \varkappa \Delta T^i,    \\[1ex]
+%          - (3 \lambda + 2 \mu) \alpha T_0 \tr[\dot \e(\bv{u}^i)]    \\[1ex]
+    \bv{\sigma}(\bv{u}^i, T^i) = \bv{\sigma}^e(\bv{u}^i) - \bv{\sigma}^T(T^i), \qquad 
+            \bv{\sigma}^e(\bv{u}^i) := \C:\bv{\e}(\bv{u}^i), \\[1ex]
+    \bv{\sigma}^T(T^i) :=  (3 \lambda + 2 \mu) \alpha (T^i-T_0) \bv 1,
+   \end{array}  &\mbox{in } [0,T]\times\Omega^i, \\[8ex]
+    \bv{u}^i = \given{\bv{u}}^i,&\mbox{on }[0,T]\times\Gamma_{u_D}^i, \\
+    \bv{t}^i = \given{\bv{t}}^i,&\mbox{on }[0,T]\times\Gamma_{u_N}^i, \\[2ex]
+    T^i = \given{T}_D^i,&\mbox{on }[0,T]\times\Gamma_{T_D}^i, \\
+    -k\nabla T^i \cdot \bv{n}^i =: \given{q}^i&\mbox{on }[0,T]\times\Gamma_{T_N}^i, \\[2ex]
+\left. 
+   \begin{array}{c}
+    \sigma_\cn(\bv{u}^{\sl})=-\sigma_\cn(\bv{u}^{\ms})=:\sigma_\cn, \\
+    \mbox{if } [u_{\cn}]=g, \mbox{ then } \sigma_n < 0, \\[2ex]
+    \sigma_\ct(\bv{u}^{\sl})=-\sigma_\ct(\bv{u}^{\ms})=:\sigma_\ct, \\
+    \mbox{if } |\sigma_\ct| < \mu_f |\sigma_\cn|, \mbox{ then } u_\ct = 0,\\
+    \mbox{if } |\sigma_\ct| = \mu_f |\sigma_\cn|, \mbox{ then } \exists \hat \lambda \geq 0: [u_\ct] = - \hat \lambda \sigma_\ct \\[2ex]
+    -k\nabla T^{\sl} \cdot n^{\sl} \,\,\,\,
+      = \,\,\,\,\, \dfrac{\bar{\gamma}^{\sl} \bar{\gamma}^{\ms}}{\bar{\gamma}^{\sl} + \bar{\gamma}^{\ms}} |\sigma_\cn| [T] 
+        + \dfrac{\bar{\gamma}^{\sl}}{\bar{\gamma}^{\sl} + \bar{\gamma}^{\ms}} \sigma_\ct [\dot u_\ct], \\
+    -k\nabla T^{\ms} \cdot n^{\ms} 
+      = - \dfrac{\bar{\gamma}^{\sl} \bar{\gamma}^{\ms}}{\bar{\gamma}^{\sl} + \bar{\gamma}^{\ms}} |\sigma_\cn| [T] 
+        + \dfrac{\bar{\gamma}^{\ms}}{\bar{\gamma}^{\sl} + \bar{\gamma}^{\ms}} \sigma_\ct [\dot u_\ct],
+    \end{array} \right\rbrace &\mbox{on }[0,T]\times\Gamma_C,
+    \end{array}
+\end{equation}
+where $[u_j] = u^{\sl}_j - u^{\ms}_j, j=\cn,\ct, [T] = T^{\sl} - T^{\ms}$, the symmetric gradient $\bv{\e}(\bv{u}^i) := \bv \nabla^{sym} \bv u^i := 1/2 (\bv \nabla \bv u^i + (\bv \nabla \bv u^i)^T )$, $\C$ is the fourth order elastic Hooke's tensor, $\lambda, \mu$ are Lam\'e coefficients, $\alpha$ is the coefficient of thermal expansion, $T_0$ is the reference temperature, $\varkappa:=\frac{k}{\rho c}$, $\rho$ - density, $c$ - heat  capacity, $k$ - heat conductivity, $\bar{\gamma}^{\sl}$ and $\bar{\gamma}^{\ms}$ - heat conductances, $\mu_f$ - friction coefficient.
+We write in the sequel $\bv{t}_C := \sigma_\cn^{\ms} \bv{n}^{\ms} + \sigma_\ct \mathbf{e}^{\ms}$ for the boundary traction with normal and tangential vectors $\bv{n}^{\ms}$ and $\mathbf{e}^{\ms}$.
+
+
+% \subsection{Constitutive equations} \label{sec:cEq}
+
+The classical problem (\ref{ClassicalForm}) yields a weak formulation in the form of a variational inequality. To avoid this inequality we employ a penalty method for the contact as described in Section \ref{sec:ElPlContact:DiscretizationSolutionProcedure}. Let bodies penetrate each other slightly along the contact boundary and let us penalize the penetration $\gap_{\cn}$ (see Section \ref{sec:ElPlContact:DiscretizationSolutionProcedure} for definition) by setting the normal stress
+\[
+\sigma_{\cn} := -\dfrac{1}{\epsilon_{\cn}} \gap_{\cn},
+\]
+where $\epsilon_{\cn} \ll 1$ is a penalty parameter. The regularized Coulomb's friction law is given by
+\[
+\sigma_\ct := - \mu_f |\sigma_\cn| P_{\pm1} (\dfrac{1}{\epsilon_{\ct}} [u_\ct]),
+\]
+where 
+\begin{equation*}
+P_{\pm1} (x) := 
+\left\lbrace 
+\begin{array}{ll}
+\sign x &\qquad |x| > 1, \\
+x & \qquad |x| \leq 1,
+\end{array}
+\right. 
+\end{equation*}
+see Section \ref{sec:ElPlContact:DiscretizationSolutionProcedure} for more details.
+
+Since the bodies touch each other in the contact zone, the nonzero heat flux is initiated, if the bodies have different temperatures. The heat flux should be also proportional to the normal pressure, which has a micromechanical background, \cite{WrMi94}. Furthermore, the heat flux should be changed by the energy dissipated due to the frictional sliding. We adopt the constitutive equations for heat flux from \cite{JoKl93} and set as already written in (\ref{ClassicalForm})
+\begin{align*}
+    -k\nabla T^{\sl} \cdot n^{\sl} \,\,\,\,
+      &= \,\,\,\,\, \dfrac{\bar{\gamma}^{\sl} \bar{\gamma}^{\ms}}{\bar{\gamma}^{\sl} + \bar{\gamma}^{\ms}} |\sigma_\cn| [T] 
+        + \dfrac{\bar{\gamma}^{\sl}}{\bar{\gamma}^{\sl} + \bar{\gamma}^{\ms}} \sigma_\ct [\dot u_\ct]=:q^{\sl}_{C} \\
+    -k\nabla T^{\ms} \cdot n^{\ms} 
+      &= - \dfrac{\bar{\gamma}^{\sl} \bar{\gamma}^{\ms}}{\bar{\gamma}^{\sl} + \bar{\gamma}^{\ms}} |\sigma_\cn| [T] 
+        + \dfrac{\bar{\gamma}^{\ms}}{\bar{\gamma}^{\sl} + \bar{\gamma}^{\ms}} \sigma_\ct [\dot u_\ct]=:q^{\ms}_{C},
+\end{align*}
+where the first term corresponds to the energy interchange due to normal contact and the second term reflects the heat produced by friction. $\gamma^{\sl}, \gamma^{\ms}$ are experimentally defined material parameters.
+
+The weak formulation of (\ref{ClassicalForm}) is derived in two steps. First we obtain a weak form of the equilibrium equation and then the a weak form of the heat conduction equation. 
+
+Testing the equilibrium equation in (\ref{ClassicalForm}) with a suitable mechanical test function $\bv \eta^i$ \cite{WrMi94}  and integration by parts yields
+\begin{equation}\label{WeakForm}
+\begin{array}{l}
+\sum \limits_{i=\ms,\sl} \left\lbrace (\C : \bv{\e}(\bv u^i), \bv{\e}(\bv{\eta}^i))_{\Omega^i}
+- (\bv{\sigma}^T(T^i), \bv{\e}(\bv{\eta}^i))_{\Omega^i}
+- \left\langle \bv{t}_C(\bv u^i), \bv \eta^i \right\rangle_{\Gamma_C} \right\rbrace \\
+\qquad\qquad\qquad = \sum \limits_{i=\ms,\sl} \left\lbrace (\given{\bv{f}}^i, \bv \eta^i)_{\Omega^i}
++ \left\langle \bv{t}^i_N, \bv \eta^i \right\rangle_{\Gamma_N^i} \right\rbrace .
+\end{array}
+\end{equation}
+Adopting notations of Section \ref{sec:BEMBEM} and proceeding similarly we obtain with $\Sigma^i=\Gamma_C\cup\Gamma_N^i$
+\begin{equation*}\allowbreak
+\begin{array}{l}
+(\bv{\sigma}(\bv u^i),\bv{\e}(\bv{\eta}^i))_{\Omega^i} 
+- (\given{\bv{f}}^i, \bv \eta^i)_{\Omega^i}\\[2ex]
+\qquad = ( \C : \bv{\e}(\bv u^i),\bv{\e}(\bv{\eta}^i))_{\Omega^i} 
+- (\bv{\sigma}^T(T^i),\bv{\e}(\bv{\eta}^i))_{\Omega^i} 
+- (\given{\bv{f}}^i, \bv \eta^i)_{\Omega^i}\\[2ex]
+\qquad = ( \C : \e(\bv u^i),\bv{\e}(\bv{\eta}^i))_{\Omega^i} 
++ (\Div [\bv{\sigma}^T(T^i)], \bv \eta^i)_{\Omega^i} \\[2ex]
+\qquad \qquad - \left\langle [\bv{\sigma}^T(T^i)] \cdot \bv{n}, \bv \eta^i\right\rangle_{\Sigma^i} 
+- (\given{\bv{f}}^i, \bv \eta^i)_{\Omega^i}\\[2ex]
+\qquad = ( \C : \bv{\e}(\bv u^i),\bv{\e}(\bv{\eta}^i))_{\Omega^i} 
++ (\Div [\bv{\sigma}^T(T^i)] - \given{\bv{f}}^i,\bv \eta^i)_{\Omega^i} \\[2ex]
+\qquad \qquad - \left\langle [\bv{\sigma}^T(T^i)] \cdot \bv{n}, \bv \eta^i\right\rangle_{\Sigma^i} \\[2ex]
+\qquad = \left\langle S \bv u^i, \bv \eta^i \right\rangle_{\Sigma^i} 
++ \left\langle N (\Div [\bv{\sigma}^T(T^i)] - \given{\bv{f}}^i) , \bv \eta^i \right\rangle_{\Sigma^i}.
+\end{array}
+\end{equation*}
+Therefore the domain weak formulation (\ref{WeakForm}) can be rewritten now in terms of a weak formulation on the boundary: Find $\mathbf{u}_i$ on $\Sigma^i$ such that $\forall \bv \eta^i$ on $\Sigma^i$
+\begin{equation} \label{ThElContWeakMech}
+\begin{array}{r}
+\sum \limits_{i=\ms,\sl}  
+\left\langle S \bv u^i, \bv \eta^i \right\rangle_{\Sigma^i} 
++ \left\langle  N (\Div[\bv{\sigma}^T(T^i)]), \bv \eta^i \right\rangle_{\Sigma^i}
+- \left\langle [\bv{\sigma}^T(T^i)] \cdot \bv{n}, \bv \eta^i\right\rangle_{\Sigma^i} \\[2ex]
+- \left\langle \bv{t}_C(\bv u^i), \bv \eta^i \right\rangle_{\Gamma_C} 
+= \sum \limits_{i=\ms,\sl} 
+\left\langle N \given{\bv{f}}^i, \bv \eta^i \right\rangle_{\Sigma^i}
++ \left\langle \bv{t}^i_N, \bv \eta^i \right\rangle_{\Gamma_N^i}.
+\end{array}
+\end{equation}
+
+% \subsubsection{Thermo-part}
+
+To obtain the weak formulation for the thermo-part we test the heat conduction equation in (\ref{ClassicalForm}) with the thermal test function $\varphi$ \cite{JoKl93} and obtain
+\begin{equation*} 
+\begin{array}{r}
+\sum \limits_{i=\ms,\sl} \left\lbrace 
+(\dot T^i,\varphi)_{\Omega^i} 
++ \varkappa (\bv \nabla T^i, \bv \nabla \varphi^i)_{\Omega^i} \right\rbrace 
+= \sum \limits_{i=\ms,\sl} \left\lbrace 
+\left\langle q_{C}^i,\varphi^i \right\rangle_{\Gamma^i_{TN}} 
++ \left\langle q_{C}^i,\varphi^i \right\rangle_{\Gamma_C} \right\rbrace.
+\end{array}
+\end{equation*}
+The constitutive conditions for the heat flux provide
+\begin{equation} \label{WeakThermo}
+\begin{array}{r}
+\sum \limits_{i=\ms,\sl} \left\lbrace 
+(\dot T^i,\varphi)_{\Omega^i} 
++ \varkappa (\bv \nabla T^i, \bv \nabla \varphi^i)_{\Omega^i} \right\rbrace 
+= \sum \limits_{i=\ms,\sl} 
+\left\langle q_{C}^i,\varphi^i \right\rangle_{\Gamma^i_{TN}} \\
++ \dfrac{\bar{\gamma}^{\sl} \bar{\gamma}^{\ms}}{\bar{\gamma}^{\sl} + \bar{\gamma}^{\ms}} \left\langle \sigma_\cn [T], [\varphi] \right\rangle_{\Gamma_C}
++ \left\langle \sigma_\ct [\dot u_\ct], \{\varphi\} \right\rangle_{\Gamma_C},
+\end{array}
+\end{equation}
+where
+\[
+\{\varphi\}:= \dfrac{\bar{\gamma}^{\sl}}{\bar{\gamma}^{\sl} + \bar{\gamma}^{\ms}} \varphi^{\sl} + \dfrac{\bar{\gamma}^{\ms}}{\bar{\gamma}^{\sl} + \bar{\gamma}^{\ms}} \varphi^{\ms}.
+\]
+
+Now, the system of weak equations (\ref{ThElContWeakMech}), (\ref{WeakThermo}) gives the coupled weak formulation for thermoelastic frictional contact problem.
+
+\subsection{Operator splitting, discretization and solution procedure} \label{sec:decomp}
+
+The basic idea to solve the coupled problem (\ref{ThElContWeakMech}), (\ref{WeakThermo}) is to decompose it into a mechanical part and a thermal part \cite{JoKl93}, \cite{WrMi94}:
+\begin{enumerate}
+\item Assume that the temperature field $T^i$ is known. Find $\bv u^i$ satisfying the mechanical variational equation (\ref{ThElContWeakMech}).
+\item Assume that the displacement field $\bv u^i$ is known (and therefore $\dot u_\ct^i$, $\sigma_\cn$ and $\sigma_\ct$). Find $T^i$ satisfying the thermal variational equation (\ref{WeakThermo}).
+\end{enumerate}
+
+Applying a backward Euler scheme for the time discretization the equations (\ref{ThElContWeakMech}), (\ref{WeakThermo}) can be rewritten in a semidiscrete form ($n=0,1,\ldots$)
+\begin{equation} \label{DWeakMech}
+\begin{array}{r}
+\sum \limits_{i=\ms,\sl}  
+\left\langle S (\bv u^i)_n, \bv \eta^i \right\rangle_{\Sigma^i} 
++ \left\langle  N (\Div[\bv{\sigma}^T((T^i)_n)]), \bv \eta^i \right\rangle_{\Sigma^i}
+- \left\langle [\bv{\sigma}^T((T^i)_n)] \cdot n, \bv \eta^i\right\rangle_{\Sigma^i} \\[2ex]
+- \left\langle \bv{t}_C((\bv u^i)_n), \bv \eta^i \right\rangle_{\Gamma_C} 
+= \sum \limits_{i=\ms,\sl} 
+\left\langle N \given{\bv{f}}^i, \bv \eta^i \right\rangle_{\Sigma^i}
++ \left\langle \bv{t}^i_N, \bv \eta^i \right\rangle_{\Gamma_N^i},
+\end{array}
+\end{equation}
+\begin{equation} \label{DWeakThermo}
+\begin{array}{r}
+\sum \limits_{i=\ms,\sl} \left\lbrace 
+\left(\dfrac{(T^i)_n - (T^i)_{n-1}}{\Delta t},\varphi \right)_{\Omega^i} 
++ \varkappa \left(\bv \nabla (T^i)_n, \bv \nabla \varphi^i \right)_{\Omega^i} \right\rbrace 
+= \sum \limits_{i=\ms,\sl} 
+\left\langle q_{C}^i,\varphi^i \right\rangle_{\Gamma^i_{TN}} \\
++ \dfrac{\bar{\gamma}^{\sl} \bar{\gamma}^{\ms}}{\bar{\gamma}^{\sl} + \bar{\gamma}^{\ms}} \left\langle (\sigma_\cn)_n [(T)_n], [\varphi] \right\rangle_{\Gamma_C}
++ \left\langle (\sigma_\ct)_n \left[\dfrac{(u_\ct)_n - (u_\ct)_{n-1}}{\Delta t}\right], [\varphi] \right\rangle_{\Gamma_C},
+\end{array}
+\end{equation}
+where the subindex $n$ denotes functions evaluated in the time step $t_n$.
+Introducing the fixed point iterative process, marked with the upper index $k$ we end up with the following algorithm inside each time step.
+
+Set $(\bv u^i)^0_n:=(\bv u^i)_{n-1}$, $(T^i)^0_n:=(T^i)_{n-1}$
+% , $(\sigma_\cn)^0_n:=(\sigma_\cn)_{n-1}$, $(\sigma_\ct)^0_n:=(\sigma_\ct)_{n-1}$
+.
+
+For $k=1,2,3...$ 
+\begin{enumerate}
+\item Solve the mechanical problem: Find $(\bv{u}^i)^k_n$:
+\begin{equation} \label{DDWeakMech}
+\hspace*{-10mm}
+\begin{array}{r}
+\sum \limits_{i=\ms,\sl}  
+\left\langle S (\bv u^i)^k_n, \bv \eta^i \right\rangle_{\Sigma^i} 
++ \left\langle  N (\Div[\bv{\sigma}^T((T^i)^{k-1}_n)]), \bv \eta^i \right\rangle_{\Sigma^i}
+- \left\langle [\bv{\sigma}^T((T^i)^{k-1}_n)] \cdot \bv{n}, \bv \eta^i\right\rangle_{\Sigma^i} \\[2ex]
+- \left\langle \bv{t}_C((\bv u^i)^k_n), \bv \eta^i \right\rangle_{\Gamma_C} 
+= \sum \limits_{i=\ms,\sl} 
+\left\langle N \given{\bv{f}}^i, \bv \eta^i \right\rangle_{\Sigma^i}
++ \left\langle \bv{t}^i_N, \bv \eta^i \right\rangle_{\Gamma_N^i},
+\end{array}
+\end{equation}
+\item Solve the thermal problem: Find $(T^i)^k_n$:
+\begin{equation} \label{DDWeakThermo}
+\hspace*{-10mm}
+\begin{array}{r}
+\sum \limits_{i=\ms,\sl} \left\lbrace 
+\left(\dfrac{(T^i)^k_n - (T^i)_{n-1}}{\Delta t},\varphi \right)_{\Omega^i} 
++ \varkappa \left(\bv \nabla (T^i)^k_n, \bv \nabla \varphi^i \right)_{\Omega^i} \right\rbrace 
+= \sum \limits_{i=\ms,\sl} 
+\left\langle q_{C}^i,\varphi^i \right\rangle_{\Gamma^i_{TN}} \\
++ \dfrac{\bar{\gamma}^{\sl} \bar{\gamma}^{\ms}}{\bar{\gamma}^{\sl} + \bar{\gamma}^{\ms}} \left\langle (\sigma_\cn)^{k}_n [(T)^k_n], [\varphi] \right\rangle_{\Gamma_C}
++ \left\langle (\sigma_\ct)^k_n \left[\dfrac{(u_\ct)^k_n - (u_\ct)_{n-1}}{\Delta t}\right], \{\varphi\} \right\rangle_{\Gamma_C},
+\end{array}
+\end{equation}
+\item Stop, if $||(\bv u^i)^k_n - (\bv u^i)^{k-1}_n|| + ||(T^i)^k_n - (T^i)^{k-1}_n|| \leq TOL$,\\
+ Otherwise set $(\bv u^i)^{k+1}_n:=(\bv u^i)^k_n$, $(T^i)^{k+1}_n:=(T^i)^k_n$, $k=k+1$, goto 1.
+\end{enumerate}
+
+The problems (\ref{DDWeakMech}), (\ref{DDWeakThermo}) can be discretized in space with BEM and FEM, respectively. The problem (\ref{DDWeakMech}) should be also linearized, as explained in Section \ref{sec:ConstitutiveConditions:Discretization}. Then the Newton's method can be applied to its linearized version.
+
+
+
+\subsection{Numerical simulation}\label{sec:ThElContact:Benchmark}
+The algorithm discussed in this sections has been implemented to model a thermoelastic contact problem with friction. We model an elastic punch of dimension $30\times 32~mm^2$ in potential contact with an elastic foundation of dimension $92\times60~mm^2$, a uniform quadrilateral mesh is chosen for both bodies. We use continuous, piecewise bilinear approximation for the displacement and continuous piecewise bilinear approximation for the temperature. For auxiliary variables (tractions on the contact boundary and internal plastic variables we use interpolation in Gauss quadrature nodes)
+
+We take material data for steel \cite{JoKl93}: Youngs's modulus $E=206~000~MPa$, Poisson's ratio $\nu=0.3$, density $\rho=7850~kg/m^3$, thermal expansion coefficient $\alpha=12\times10^{-6}$, heat capacity $c=500~J~kg^{-1}~K^{-1}$ and thermal conductivity $k=43~W~m^{-1}~K^{-1}$, thermal contact conductances $\bar{\gamma}^1=\bar{\gamma}^2=1~W~N^{-1}~K^{-1}$, friction coefficient $\mu_f=0.2$. Displacement is fixed on the lower boundary of the foundation. All boundaries are thermally insulated, the initial temperature is the reference temperature $T_0=300~K$ at all nodes.  In figures the punch is pushed with constant displacement vector $(0,-1~mm)^T$ applied at the upper edge of the punch and  a tangential cycle loading  is applied there with maximum deviation $(-0.199~mm,0)^T$. The load in normal direction is enforced in $4$ steps, whereas each tangent cycle is performed in $64$ steps. We perform $10$ tangent cycles. The linear system is solved using the Conjugate Gradient method with the diagonal preconditioner. 
+
+As penalty parameters for contact we choose : $\epsilon_{\ct}=1/(2E)$, $\epsilon_{\cn}=1/(4E)$.
+
+In figures \ref{fig:Fig1} and \ref{fig:Fig2} we see the distribution of the strain norm (a), the norm of the stress deviator (b), the norm of the stress tensor (c), the second diagonal component of the stress tensor $\sigma_{yy}$ (d), the first component of the displacement vector $u_x$ (g),  and  the second component of the displacement vector $u_y$ as well as deformed mesh (f). The figure \ref{fig:Fig1} shows the simulation results after applying the full normal load and $5/4$th of the cycle load,  whereas the figure \ref{fig:Fig2} shows  the end results. Our numerical experiment (pure FE simulations) shows clearly the development of heat near the contact boundary, especially  near the bottom corners of the work tool. In picture \ref{fig:Fig2} one can clearly see the sticking along the bottom edge of the work tool, i.e. the displacements of both bodies in $x$ direction are equal.
+
+
+\begin{figure}[h!]
+\begin{minipage}[c]{7cm} 
+\includegraphics[scale=0.6]{/home/gein/Projects/hsvprogs/test.tex/heat.kontakt/test.fem.heat.03.04.2006/epsnorm.32.8.TANGENT...84.eps}
+
+{(a) $\|\bv{\e}\|$} 
+\end{minipage}
+\begin{minipage}[c]{7cm}
+\includegraphics[scale=0.6]{/home/gein/Projects/hsvprogs/test.tex/heat.kontakt/test.fem.heat.03.04.2006/sigmadevnorm.32.8.TANGENT...84.eps}
+
+{(b) $\|\dev\bv{\sigma}\|$}
+\end{minipage}
+
+\begin{minipage}[c]{7cm}
+\includegraphics[scale=0.6]{/home/gein/Projects/hsvprogs/test.tex/heat.kontakt/test.fem.heat.03.04.2006/sigmanorm.32.8.TANGENT...84.eps}
+
+{(c) $\|\bv{\sigma}\|$}
+\end{minipage}
+\begin{minipage}[c]{7cm}
+\includegraphics[scale=0.6]{/home/gein/Projects/hsvprogs/test.tex/heat.kontakt/test.fem.heat.03.04.2006/sigmayy.32.8.TANGENT...84.eps}
+
+{(d) $\sigma_{yy}$}
+\end{minipage}
+
+\begin{minipage}[c]{7cm}
+\includegraphics[scale=0.6]{/home/gein/Projects/hsvprogs/test.tex/heat.kontakt/test.fem.heat.03.04.2006/delta.theta.32.8.TANGENT...84.eps}
+
+{(e) $T-300$}
+\end{minipage}
+\begin{minipage}[c]{7cm}
+\includegraphics[scale=0.6]{/home/gein/Projects/hsvprogs/test.tex/heat.kontakt/test.fem.heat.03.04.2006/u.deformedmesh.32.8.TANGENT...84.eps}
+
+{(f) deformed mesh}
+\end{minipage}
+
+\begin{minipage}[c]{7cm}
+\includegraphics[scale=0.6]{/home/gein/Projects/hsvprogs/test.tex/heat.kontakt/test.fem.heat.03.04.2006/ux.32.8.TANGENT...84.eps}
+
+{(g) $u_x$}
+\end{minipage}
+\begin{minipage}[c]{7cm}
+\includegraphics[scale=0.6]{/home/gein/Projects/hsvprogs/test.tex/heat.kontakt/test.fem.heat.03.04.2006/uy.32.8.TANGENT...84.eps}
+
+{(h) $u_y$}
+\end{minipage}
+\caption{16 increments of 2nd tangent cycle}\label{fig:Fig1}
+\end{figure}
+
+\begin{figure}[h!]
+\begin{minipage}[c]{7cm}
+\includegraphics[scale=0.6]{/home/gein/Projects/hsvprogs/test.tex/heat.kontakt/test.fem.heat.03.04.2006/epsnorm.32.8.TANGENT...644.eps}
+
+{(a) $\|\bv{\e}\|$}
+\end{minipage}
+\begin{minipage}[c]{7cm}
+\includegraphics[scale=0.6]{/home/gein/Projects/hsvprogs/test.tex/heat.kontakt/test.fem.heat.03.04.2006/sigmadevnorm.32.8.TANGENT...644.eps}
+
+{(b) $\|\dev\bv{\sigma}\|$}
+\end{minipage}
+
+\begin{minipage}[c]{7cm}
+\includegraphics[scale=0.6]{/home/gein/Projects/hsvprogs/test.tex/heat.kontakt/test.fem.heat.03.04.2006/sigmanorm.32.8.TANGENT...644.eps}
+
+{(c) $\|\bv{\sigma}\|$}
+\end{minipage}
+\begin{minipage}[c]{7cm}
+\includegraphics[scale=0.6]{/home/gein/Projects/hsvprogs/test.tex/heat.kontakt/test.fem.heat.03.04.2006/sigmayy.32.8.TANGENT...644.eps}
+
+{(d) $\sigma_{yy}$}
+\end{minipage}
+
+\begin{minipage}[c]{7cm}
+\includegraphics[scale=0.6]{/home/gein/Projects/hsvprogs/test.tex/heat.kontakt/test.fem.heat.03.04.2006/delta.theta.32.8.TANGENT...644.eps}
+
+{(e) $T-300$}
+\end{minipage}
+\begin{minipage}[c]{7cm}
+\includegraphics[scale=0.6]{/home/gein/Projects/hsvprogs/test.tex/heat.kontakt/test.fem.heat.03.04.2006/u.deformedmesh.32.8.TANGENT...644.eps}
+
+{(f) deformed mesh}
+\end{minipage}
+
+\begin{minipage}[c]{7cm}
+\includegraphics[scale=0.6]{/home/gein/Projects/hsvprogs/test.tex/heat.kontakt/test.fem.heat.03.04.2006/ux.32.8.TANGENT...644.eps}
+
+{(g) $u_x$}
+\end{minipage}
+\begin{minipage}[c]{7cm}
+\includegraphics[scale=0.6]{/home/gein/Projects/hsvprogs/test.tex/heat.kontakt/test.fem.heat.03.04.2006/uy.32.8.TANGENT...644.eps}
+
+{(h) $u_y$}
+\end{minipage}
+\caption{End of simulation}\label{fig:Fig2}
+\end{figure}
+

@@ -1,0 +1,1135 @@
+ \documentclass[12pt,a4paper]{scrbook}
+% \documentclass[12pt,a4paper]{report}
+ \usepackage{german}
+ \usepackage[utf8]{inputenc}
+ \usepackage{pst-all}
+ \usepackage{exscale}
+ \usepackage{multicol}
+ \usepackage{epsfig}
+ \usepackage{ifthen}
+ \usepackage{color}
+ \usepackage{psfrag}
+\usepackage{amssymb}
+\usepackage{amsmath}
+ \usepackage{amsthm}
+ \usepackage{longtable,float,rotating}
+ \usepackage{amscd, mathrsfs,  mathcomp, yfonts, setspace, multicol, stmaryrd, epsfig, bbm, dsfont}
+ \usepackage{nomencl, cancel,  xcolor, verbatim}
+\usepackage{comment}
+
+
+
+
+
+
+\input{commands}
+
+\renewcommand{\baselinestretch}{1.1}
+%\addtolength{\topmargin}{-2cm}
+\addtolength{\textheight}{1.0cm}
+\oddsidemargin0.6cm
+\evensidemargin-0.6cm
+%\addtolength{\textwidth}{2cm}
+%\addtolength{\footskip}{0.7cm}
+\setlength{\parindent}{0mm}
+\setlength{\parskip}{9pt}
+
+
+\allowdisplaybreaks[3]
+\bibliographystyle{siam}
+%  \fancypagestyle{headings}{
+% \fancyhf{}
+% 
+% % \renewcommand\headrulewidth{.1pt}
+% 
+% \fancyhead[LE]{\slshape\nouppercase{\leftmark}}
+% \fancyhead[RO]{\slshape\nouppercase{\rightmark}}
+% \fancyfoot[C]{}
+% \fancyfoot[LE]{\thepage}
+% \fancyfoot[RO]{\thepage}
+% \renewcommand{\sectionmark}[1]{asd}
+% \renewcommand{\chaptermark}[1]{asd}
+% 
+% }
+
+
+\begin{document}
+\def \IABEM{/home/gein/Documents/tex/papers/IABEM06}
+\def \SimulationDataOne{/home/gein/Documents/tex/Draft/contact.BEMBEM.vs.FEMFEM/SimulationData/test.plasticity.check.21.07.2006.test.bembem.nofriction.18.07.2006}
+\def \pict{/home/gein/Documents/tex/papers/paper_FE.BE.Procedures.for.Elastoplastic.Contact.Problems_CGMS/pict}
+\def \pictnew{/home/gein/Documents/tex/papers/paper_FE.BE.Procedures.for.Elastoplastic.Contact.Problems_CGMS/pict_new}
+\def \DomainDecomposition{/home/gein/Documents/tex/papers/paper_Domain.Decomposition.FE.BE.Techniques.for.Elastoplastic.Contact.Problems_CGMS}
+\chapter{Elastoplastic contact problems. Small deformations}\label{chap:SmallDeformations}
+\markright{\large Elastoplasticity. Small deformations}
+\section{Weak and penalty formulations}\label{sec:ElPlContact:WeakPenalty}
+
+We consider two deformable elasto-plastic bodies $\ms$ and $\sl$ occupying Lipschitz domains $\Omega^{\ms}, \Omega^{\sl} \subset \R^2$  in the small deformation formulation. They can be disjoint or touch each other along their boundaries. We denote one body as 'slave' ($\sl$), the other as 'master' ($\ms$). The choice is symmetric, i.e. we can change notations vice versa. This concept is essential for the treatment of contact conditions. We assume, that the boundary of the domain $\Omega^i, (i=\sl,\ms)$  consists of 3 disjoint parts: a part with prescribed displacements $\Gamma^i_D$, one with prescribed tractions $\Gamma^i_N$ and a part $\Gamma^i_C$ - zone of probable contact, i.e. $\Gamma^i = \partial \Omega^i = \overline{\Gamma}^i_D \cup \overline{\Gamma}^i_N \cup \overline{\Gamma}^i_C$. Define $\Sigma^i := \Gamma^i_N \cup \Gamma^i_C$. We admit the bodies to have some micro-interpenetration in the contact zone, which allows us to construct contact conditions. Let $\bv{x}^{\sl}, \bv{x}^{\ms} \in \R^2$ be the coordinates of the corresponding bodies. We parameterize the master surface by the natural parameter $\zeta^{\ms}$ and slave surface with $\zeta^{\sl}$.
+
+
+\begin{problem}\label{prob:ElPlWeakRegularizedContact}
+ For given  time interval  of interest $(0,T)$, given  friction coefficient $\mu_f \in [0,1/2) $, displacements $\given{\bv{u}}^i: [0,T] \rightarrow \left(H^{1/2}(\Gamma_D^i)\right)^2$, boundary traction 
+ $\given{\bv{t}}^i: [0,T] \rightarrow \left(H^{-1/2}(\Gamma_N^i)\right)^2$, volume forces $\given{\bv{f}}^i: [0,T]\rightarrow \left(H^{-1}(\Gamma_N^i)\right)^2$, free energy scalar functions $\psi^i(\bv{\e}^{ie},\bv{\xi}^i)$ and their decompositions $\psi^i(\bv{\e}^{ie},\bv{\xi}^i)=\psi^{ie}(\bv{\e}^{ie})+\psi^{ip}(\bv{\xi}^i)$, scalar yield  function for elastoplasticity $\yieldf_{pl}^i(\bv{\sigma}^i,\bv{\chi}^i)$, initial values $(\bv{u}^i(0),\bv{\sigma}^{i}(0),\bv{\chi}^{i}(0))=(\bv{0},\bv{0},\bv{0})$, prescribed contact boundary $\Gamma_C$: 
+find $(\bv{u}^i_{\epsilon},\bv{\sigma}^{i}_{\epsilon},\bv{\chi}^i_{\epsilon}): [0,T] \rightarrow \bv{V}_D(\Omega^i)\times \bv{S}(\Omega^i)\times \bv{M}(\Omega^i)$, such that
+\begin{eqnarray}
+\sum \limits_{i=\sl,\ms}  b(\bv{\eta}^i,\bv{\sigma}^i_{\epsilon}(t))- \left\langle \bv{t}_{\epsilon_C}(t), \bv{\eta}^{\ms}-\bv{\eta}^{\sl} \right\rangle_{\Gamma_C}    =\sum \limits_{i=\sl,\ms}\left\langle l^{i}(t),\bv{\eta}^{i}\right\rangle, & &\label{eq:ElPlContWeakFormMechReg}\\[5ex]
+ \bar{a}(\dot{\bv{\sigma}}^i_{\epsilon}(t),\bv{\tau}^i-\bv{\sigma}^i_{\epsilon}(t))+c(\dot{\bv{\chi}}^i_{\epsilon}(t),\bv{\mu}^i-\bv{\chi}^i_{\epsilon}(t))-b(\dot{\bv{u}}^i_{\epsilon}(t),\bv{\tau}^i-\bv{\sigma}^i_{\epsilon}(t))\geq 0 &&\label{eq:ElPlContWeakFormPlastReg} 
+\end{eqnarray}
+for all $\bv{\eta}^i \in \bv{V}_0(\Omega^i) $, and for all $(\bv{\tau}^i,\bv{\mu}^i)\in \bv{\StressesYieldRegion}(\Omega^i)$, $i=\sl,\ms$.
+
+\begin{equation}\label{eq:RegularizedContactTraction}
+\bv{t}_{\epsilon_C}(t):=-\frac{1}{\epsilon_{\cn}}(u_{\cn}^{\ms\sl}-g)\bv{n}^{\ms}-\frac{1}{\epsilon_{\ct}}\bv{\gap}^e_{\ct}(u_{\ct}).
+\end{equation}
+\end{problem}
+The quantity $\bv{\gap}_{\ct}^e$ is obtained via $\bv{\gap}_{\ct}=u^{\sl\ms}_{\ct}\bv{{\mathrm e}}^{\ms}$ as follows. 
+With $\cF:=\mu_f\frac{1}{\epsilon_{\cn}}|u^{\sl\ms}_{\cn}-g|$ we set $\bv{g} _{\ct}^p=0$ if
+$\|\frac{1}{\epsilon_{\ct}}\bv{\gap} _{\ct}\|\leq \cF$ and take $\bv{\gap} _{\ct}^e=\bv{\gap} _{\ct}$. Otherwise we set
+$\bv{\gap} _{\ct}^p=\left(1-\frac{\cF}{\|\bv{\gap}_{\ct}/\epsilon_{\ct}\|}\right)\bv{\gap} _{\ct}$ yielding
+$\bv{\gap} _{\ct}^e=\bv{\gap}_{\ct}-\bv{\gap} _{\ct}^p$. 
+
+\begin{eqnarray}
+\sigma_{\cn}&:=&-\frac{1}{\epsilon_{\cn}}(u_{\cn}^{\ms\sl}-g)\bv{n}^{\ms}\label{eq:RegularizedContactTractionNormalComponent} \\
+\bv{\sigma_{\ct}}&:=&-\frac{1}{\epsilon_{\ct}}\bv{\gap}^e_{\ct}(u_{\ct}),\label{eq:RegularizedContactTractionTangentComponentVector}\\
+\sigma_{\ct}&:=&\bv{\sigma_{\ct}}\cdot \bv{{\mathrm e}}^{\ms}.\label{eq:RegularizedContactTractionTangentComponentScalar}
+\end{eqnarray}
+
+
+Next, we give a time discretization of Problem \ref{prob:ElPlWeakRegularizedContact}. Let $\TimePartition_{\tstep}$ be a partition of the time interval $(0,T)$ with maximum time step $\tstep$, $\TimePartition_{\tstep}:=\left\lbrace (t_{n-1},t_{n})  \right\rbrace_{n=0}^{N}$, where $0=t_{0}<t_1<\ldots<t_{N-1}<t_{N}=T$, $\tstep_{n}:=t_{n}-t_{n-1}$. For simplicity we will consider a uniform  partition of $(0,T)$ with a time step $\tstep$, i.e. $t_{n}-t_{n-1}=\tstep$. The time discretization of Problem \ref{prob:ElPlWeakRegularizedContact} reads
+\begin{problem}\label{prob:ElPlWeakRegularizedContactTimeDiscretization}
+Given  friction coefficient $\mu_f \in [0,1/2) $, displacements $\{\given{\bv{u}}^i_n\}_{n=1}^{N} \subset \left(H^{1/2}(\Gamma_D^i)\right)^2$, boundary traction 
+$\{\given{\bv{t}}^i_n\}_{n=1}^{N}\subset \left(H^{-1/2}(\Gamma_N^i)\right)^2$, volume forces $\{\given{\bv{f}}^i_n\}_{n=1}^{N }\subset\left(H^{-1}(\Gamma_N^i)\right)^2$, free energy scalar functions and   scalar yield  function as in Problem \ref{prob:ElPlWeakRegularizedContact}, initial values $(\bv{u}^i_0,\bv{\sigma}^{i}_0,\bv{\chi}^{i}_0)=(\bv{0},\bv{0},\bv{0})$, prescribed contact boundary $\Gamma_C$: 
+find $\{(\bv{u}^i_{\epsilon n},\bv{\sigma}^{i}_{\epsilon n},\bv{\chi}^i_{\epsilon n})_n\}_{n=1}^{N}\subset \bv{V}_D(\Omega^i)\times \bv{S}(\Omega^i)\times \bv{M}(\Omega^i)$, such that
+
+\begin{eqnarray}
+\sum \limits_{i=\sl,\ms}  b(\bv{\eta}^i,\bv{\sigma}^i_{\epsilon n})- \left\langle \bv{t}_{\epsilon_C n}, \bv{\eta}^{\ms}-\bv{\eta}^{\sl} \right\rangle_{\Gamma_C}    =\sum \limits_{i=\sl,\ms}\left\langle l_{n}^{i},\bv{\eta}^{i}\right\rangle, & &\label{eq:ElPlContWeakFormMechRegTimeDiscretization}\\[5ex]
+ \bar{a}(\Delta \bv{\sigma}^i_{\epsilon n},\bv{\tau}^i-\bv{\sigma}^i_{\epsilon n})+c(\Delta \bv{\chi}^i_{\epsilon n},\bv{\mu}^i-\bv{\chi}^i_{\epsilon n})-b(\Delta \bv{u}^i_{\epsilon n},\bv{\tau}^i-\bv{\sigma}^i_{\epsilon n})\geq 0 &&\label{eq:ElPlContWeakFormPlastRegTimeDiscretization} 
+\end{eqnarray}
+for all $\bv{\eta}^i \in \bv{V}_0(\Omega^i) $, and for all $(\bv{\tau}^i,\bv{\mu}^i)\in \bv{\StressesYieldRegion}(\Omega^i)$, $i=\sl,\ms$, where $\Delta (\bullet)_{n}:= (\bullet)_{n}- (\bullet)_{n-1}$.
+\end{problem}
+
+% \section{Predictor-Corrector scheme}\label{sec:ElPlSmall:PredictorCorrecot}
+From now and later on we will use the convention $\bv{u}:=(\bv{u}^{A},\bv{u}^{B})$, the notation applies to other variables as well. For convenience we will omit the subscript $\epsilon$. The subscript $n$ denotes the value at time step $t_n$ and the superscript $k$ in brackets ${}^{(k)}$ denotes the value at the $k$-th iteration step.  Having in mind that the stress is an implicit function of the displacement, $\bv{\sigma}^{i}\equiv \bv{\sigma}^{i}(\bv{\e}(\bv{\bv{u}^{i}}))$, we write formally
+\begin{equation}
+\bv{\sigma}^{i}(t)=\bv{\sigma}^{i}(\bv{\e}(\bv{u}^{i}(t)),\bv{\e}^{ip}(t))\approx \bv{\sigma}^{i}(\bv{\e}(\bv{u}^{i}(t-\Delta t)))+ \D^{i}:\bv{\e}(\bv{u}^{i}(t)-\bv{u}^{i}(t-\Delta t)).
+\end{equation}
+\begin{remark}
+$\bv{\sigma}^{i}(\bv{\e}(\bv{u}^{i}(t)))$ This function is globally multi-valued, but locally we can assume it to be a one-to-one mapping.
+\end{remark}
+For our simulation we will take $\D^{i}:=\dfrac{\partial\bv{\sigma}^{i}}{\partial \bv{\e}}(\bv{\e}(\bv{u}^{i}(t-\Delta t)))$, this choice is known as tangent predictor \cite{Bl97,WeRe99}.\\
+A \textit{Predictor-Corrector Solution Procedure} for Problem \ref{prob:ElPlWeakRegularizedContactTimeDiscretization} is:
+
+% \textbf{Predictor}
+First we perform the predictor step:
+Find $\bv{u}^{(k)}_{n} \in\bv{V}$:
+\begin{eqnarray}
+&&\Int_{\Omega}\D^{(k)}_{n}(\bv{\e}(\bv{u}^{(k)}_{n})-\bv{u}^{(k-1)}_{n})):\bv{\e}(\bv{\eta})\, d\Omega - \left\langle \frac{\partial\bv{t}^{(k)}_{Cn}}{\partial \bv{u}}(\bv{u}^{(k)}_{n})-\bv{u}^{(k-1)}_{n}), \bv{\eta}^{\ms}-\bv{\eta}^{\sl} \right\rangle_{\Gamma_C}   \nonumber \\ &&=-b(\bv{\eta},\bv{\sigma}^{(k-1)}_{n})+\left\langle \bv{t}^{(k-1)}_{Cn}, \bv{\eta}^{\ms}-\bv{\eta}^{\sl} \right\rangle_{\Gamma_C}+\left\langle l_{n},\bv{\eta}\right\rangle.
+\end{eqnarray}
+Next we perform the corrector step: 
+Find $(\bv{\sigma}^{(k)}_{n},\bv{\chi}^{(k)}_{n})\in\bv{\mathcal{P}}$:
+\begin{equation}
+ \bar{a}(\Delta \bv{\sigma}^{(k)tr}_{ {n}},\bv{\tau}-\bv{\sigma}_{n-1})+c(\Delta \bv{\chi}^{(k)tr}_{n},\bv{\mu}-\bv{\chi}_{n-1})-b(\Delta \bv{u}^{(k)}_{n},\bv{\tau}-\bv{\sigma}_{n-1})\geq 0.
+\end{equation}
+with
+\begin{eqnarray}
+ \bv{\sigma}^{(k)tr}_{n}&:=&\bv{\sigma}_{n-1}+\D^{(k)}_{n}\bv{\e}(\bv{u}^{(k)}_{n}-\bv{u}_{n-1}), \\
+ \Delta \bv{\sigma}^{(k)tr}_{n}&:=&\bv{\sigma}^{(k)tr}_{n}-\bv{\sigma}^{(k)}_{n}, \\
+ \bv{\chi}^{(k)tr}_{n}&:=&\bv{\chi}_{n-1}, \\
+ \Delta \bv{\chi}^{(k)tr}_{n}&:=&\bv{\chi}^{(k)tr}_{n}-\bv{\chi}^{(k)}_{n}.
+\end{eqnarray}
+The abstract predictor-corrector scheme given here is described in detail whithin a \textit{Solution procedure} (incremental loading)  for FEM/FEM discretizations in Section \ref{sec:FEMFEM}. The predictor step refers to steps (1.a.i)-(1.a.iv) there in the solution procedure mentioned above, whereas the corrector step is performed at step (1.a.v). The corrector step does not depend on the discretization method and is the same for FEM/FEM, BEM/BEM and FEM/BEM approaches.
+\newpage
+\section{Discretization and solution procedure (incremental loading)}\label{sec:ElPlContact:DiscretizationSolutionProcedure}
+
+\subsection{FEM/FEM} \label{sec:FEMFEM}
+We discretize the weak formulation (\ref{eq:ElPlContWeakFormMechRegTimeDiscretization}),(\ref{eq:ElPlContWeakFormPlastRegTimeDiscretization}) in space by defining a partition $\VolumePartition^i_h$ of the domain $\Omega^i, i=\sl,\ms$ into finite elements and choosing  discrete spaces 
+\begin{align*}
+% \hSpace{\bv{V}}i_{hD} &:= \left\lbrace \eta_h \in \bv{H}^1(\Omega^i) : \eta_h|_e \in \cR^1(e), \eta_h|_{e \cap \Gamma_D^i} =  \given{\bv{u}}^i \right\rbrace, \\
+\hSpace{\bv{V}}^i_{0} &:= \left\lbrace \bv{\eta}_h \in [H^1(\Omega^i)]^2 \middle|~\forall \mathfrak{e}\in\VolumePartition^i_h:~~ \bv{\eta}_h|_{\mathfrak{e}} \in \cR^1(\mathfrak{e}),~ \bv{\eta}_h|_{\mathfrak{e} \cap \Gamma_D^i} =  0 \right\rbrace,
+\end{align*}
+where $\cR^1(\mathfrak{e})$ denotes linear functions $\cP^1(\mathfrak{e})$ in case of  a triangular mesh element $\mathfrak{e}$ or bilinear functions $\cQ^1(\mathfrak{e})$ in case of a quadrilateral mesh $\mathfrak{e}$. For brevity we define
+\begin{align*}
+\hSpace{\bv{V}}_{D} := \hSpace{\bv{V}}^{\sl}_{D} \times \hSpace{\bv{V}}^{\ms}_{D}, \\
+\hSpace{\bv{V}}_{0} := \hSpace{\bv{V}}^{\sl}_{0} \times \hSpace{\bv{V}}^{\ms}_{0}.
+\end{align*}
+Find $(\Delta \bv{u}_h)_{n} \in \hSpace{\bv{V}}_{D,n}$, and therefore the new displacement state $(\bv{u}_h)_{n}=(\bv{u}_h)_{n-1} + (\Delta \bv{u}_{h})_{n}$, stress $(\bv{\sigma}^i)_{n}=\bv{\sigma}((\bv{u}_{h}^i)_n)$, contact traction $(\bv{t}_{\epsilon_C}^i)_{n} = \bv t_C((\bv{u}_{h}^i)_n)$ such that
+\begin{equation} \label{WeakFormF_n}
+F^{int}_{\bv{u}_h}((\bv{\sigma}^i)_{n},(\bv{t}_{\epsilon_C}^i)_{n},\bv{\eta}_h) = F^{ext}_{n}(\bv{\eta}_h) \qquad \forall \bv{\eta}_h \in \hSpace{\bv{V}}_0,
+\end{equation}
+where the contact traction is given by (\ref{eq:RegularizedContactTraction}) and the plastic conditions are enforced by the return maping algorithm described in boxes \ref{box:ReturnMappingConsistencyConditionPlasticity}, \ref{box:ReturnMappingPlasticity}.
+
+where
+\begin{align*}
+F^{int}(\bv{u}_{h},\bv\eta_h) &:= F^{int}_{\bv{u}_{h}}(\bv{\sigma}^i,\bv t_C^i,\bv\eta_h) := \sum_{i=\sl,\ms} ( \bv{\sigma}^i, \bv{\e}(\bv{\eta}^i_h))_{\Omega^i}
+- \left\langle \bv t_C^i, \bv{\eta}^i_h\right\rangle_{\Gamma_C}, \\
+F^{ext}(\bv\eta_h) &:= \sum_{i=\sl,\ms} (\given{\bv{f}}^i, \bv{\eta}^i_h)_{\Omega^i}
++ \left\langle \given{\bv{t}}^i, \bv{\eta}^i_h \right\rangle_{\Gamma^i_N}, \\
+\bv{\sigma}^i_h &:= \bv{\sigma}(\bv u^i_h), \qquad \bv t_C^i := \bv t_C(\bv u^i_h).
+\end{align*}
+Furthermore, the functional $F^{int}(\bv{u},\bv{\eta})$ depends on $\bv u$ whose nonlinear behavior is described by the contact constitutive equations and the constitutive equations for plasticity. We treat the loading process and a consequent application of loading increments $(\Delta \given{\bv{f}}^i)_n$, $(\Delta \given{\bv{t}}^i)_n$, $(\Delta \given{\bv{u}}^i)_n$:
+\begin{align*}
+(\given{\bv{f}}^i)_{n} &= \given{\bv{f}}^i(t_{n}), \\
+(\given{\bv{t}}^i)_{n} &= \given{\bv{t}}^i(t_{n}), \\
+(\given{\bv{u}}^i)_{n} &= \given{\bv{u}}^i(t_{n}),
+\end{align*}
+which define the discrete external load
+\begin{equation}\nonumber
+F^{ext}_{n}(\bv\eta_h) := \sum_{i=\sl,\ms} ((\given{\bv{f}}^i)_{n}, \bv{\eta}^i)_{\Omega^i}
++ \left\langle (\given{\bv{t}}^i)_{n}, \bv{\eta}^i \right\rangle_{\Gamma^i_N}
+\end{equation}
+in the pseudo-time stepping process. Define the increment-dependent functional spaces
+\begin{equation}\nonumber
+\hSpace{\bv{V}}^i_{D,n} := \left\lbrace \eta_h \in [H^1(\Omega^i)]^2 \middle| \eta_h|_e \in \cR^1(e), \eta_h|_{e \cap \Gamma_D^i} =  (\given{\bv{u}}^i)_{n} \right\rbrace,
+\end{equation}
+\begin{equation}\nonumber
+\hSpace{\bv{V}}_{D,n} := \hSpace{\bv{V}}^{\sl}_{D,n} \times \hSpace{\bv{V}}^{\ms}_{D,n}.
+\end{equation}
+
+
+We discretize both bodies using triangles or quadrilaterals. In general, both meshes do not match on the contact boundary. We also assume, that there is no change of the boundary condition type along one edge. We take continuous piecewise linear approximation of the displacement. Let us consider the structure of the linear system $\mathfrak  A \mathfrak x = {\mathfrak b} $. After linearization of contact and plasticity terms described below we obtain
+%\begin{equation*}
+%\mathfrak{A} = \mathfrak{A}^{vol} + \mathcal{C}^{\sl \sl} - \mathcal{C}^{\sl \ms} - \mathcal{C}^{\ms \sl} + \mathcal{C}^{\ms \ms},
+%\end{equation*}
+%\begin{equation*}
+%\given{\bv{f}} = - \given{\bv{f}}^{vol} + \given{\bv{f}}^{\sl} - \given{\bv{f}}^{\ms} + \given{\bv{f}}^{ext}.
+%\end{equation*}
+%More detailed
+\begin{equation*}
+ \begin{array}{r}
+   \left (
+   \begin{array}{cccc}
+   A^{pl}_{\Omega^{\sl}}    & (B^{pl}_{\Gamma^{\sl}_C})^{T}                 & 0                & 0\\
+   B^{pl}_{\Gamma^{\sl}_C} & C^{pl}_{\Gamma^{\sl}_C} + \mathcal{C}^{\sl\sl}   & -\mathcal{C}^{\sl \ms}& 0 \\
+   0               & -\mathcal{C}^{\ms \sl} & \mathcal{C}^{\ms \ms}+C^{pl}_{\Gamma^{\ms}_C}   & (B^{pl}_{\Gamma^{\ms}_C})^T \\
+   0               & 0                 & B^{pl}_{\Gamma^{\ms}_C} & A^{pl}_{\Omega^{\ms}}
+   \end{array}
+   \right )
+ \left (
+  \begin{array}{l}
+      \mathfrak x^{\sl}_{\Omega^{\sl}} \\
+      \mathfrak x^{\sl}_{\Gamma_C^{\sl}} \\
+      \mathfrak x^{\ms}_{\Gamma_C^{\ms}} \\
+      \mathfrak x^{\ms}_{\Omega^{\ms}} 
+  \end{array}
+ \right )
+= \\
+ {\mathfrak b}^{ext} - {\mathfrak b}^{int} +
+ \left (
+  \begin{array}{r}
+      0 \\
+      {\mathfrak b}^{\sl}_{\Gamma_C^{\sl}} \\
+      -{\mathfrak b}^{\ms}_{\Gamma_C^{\ms}} \\
+      0 
+  \end{array}
+ \right ),
+ \end{array}
+\end{equation*}
+where the finite element matrix
+\begin{equation*}
+\mathfrak{A}^{FEM} :=
+   \left (
+   \begin{array}{cccc}
+   A^{pl}_{\Omega^{\sl}}    & (B^{pl})^{T}_{\Gamma^{\sl}_C} & 0                & 0\\
+   B^{pl}_{\Gamma^{\sl}_C}  & C^{pl}_{\Gamma^{\sl}_C}     & 0                & 0 \\
+   0               & 0                  & C^{pl}_{\Gamma^{\ms}_C}   & (B^{pl})^T_{\Gamma^{\ms}_C} \\
+   0               & 0                  & B^{pl}_{\Gamma^{\ms}_C}   & A^{pl}_{\Omega^{\ms}}
+   \end{array}
+   \right )
+\end{equation*}
+has a band structure and has no coupling terms between $\Omega^{\sl}$ and $\Omega^{\ms}$. The index $^{pl}$ means that the matrix changes due to the plastic terms. For each body ($i=\sl,\ms$) the blocks $A^{pl}_{\Omega^i}$ are generated by testing the test-functions which correspond to the degrees of freedom in the interior of $\Omega^i$ and its Neumann boundary $\Gamma^i_N$ against themselves. The blocks $C^{pl}_{\Gamma^i_C}$ correspond to the testing of test functions, defined on the contact boundary $\Gamma^i_C$. The blocks $B^{pl}_{\Gamma^i_C}$ are generated by testing of test-functions defined in the interior of $\Omega^i$ and its Neumann boundary $\Gamma^i_N$ against test-functions, defined on the contact boundary $\Gamma^i_C$.
+
+The term ${\mathfrak b}^{ext}$ is constructed by the usual contributions of external volume forces and prescribed tractions on the Neumann boundary part. The terms $\mathcal{C}^{\sl\sl}$, $\mathcal{C}^{\sl \ms}$, $\mathcal{C}^{\ms \sl}$, $\mathcal{C}^{\ms \ms}$, ${\mathfrak b}^{\sl}_{\Gamma_C^{\sl}}$,   ${\mathfrak b}^{\ms}_{\Gamma_C^{\ms}}$ describe coupling of the bodies along contact boundary. They are constructed by the linearization of contact integrals. $\mathfrak{A}^{FEM}, {\mathfrak b}^{int}$ describe internal behavior of the bodies and reflect, for example, the plastic effects. The computation of these terms is discussed below. 
+
+
+\subsection{BEM/BEM}\label{sec:BEMBEM}
+
+Therefore the domain penalty formulation Problem \ref{prob:ElPlWeakRegularizedContactTimeDiscretization} can now be rewritten  in terms of the boundary and volume integral operators $S$ and $N$ respectively: For given $\given{\bv{f}}^i$ and $\given{\bv{t}}^i$ find $\bv{u}^i\in H^{1/2}$ with $\bv{u}^i|_{\Gamma^i_D}=\given{\bv{u}}$ satisfying
+\begin{equation} \label{eq:WeakForm_BEM}
+\begin{array}{r}
+\Sum_{i=\sl,\ms}\left(  
+\left\langle S \bv{u}^i, \bv{\eta}^i \right\rangle_{\Sigma^i} 
++ \left\langle  N (\div[\C^i : \bv{\e}^{ip}]), \bv{\eta}^i \right\rangle_{\Sigma^i}\right)
+- \left\langle [\C : \bv{\e}^{ip}] \cdot \bv{n}, \bv{\eta}^i\right\rangle_{\Sigma^i} \\[2ex]
+- \left\langle \bv{t}_{\epsilon_C}, \bv{\eta}^{\ms}-\bv{\eta}^{\sl} \right\rangle_{\Gamma_C} 
+= \Sum_{i=\sl,\ms}  \left(
+\left\langle N \given{\bv{f}}^i, \bv{\eta}^i \right\rangle_{\Sigma^i}
++ \left\langle \given{\bv{t}}^i, \bv{\eta}^i \right\rangle_{\Gamma_N^i} \right).
+\end{array}
+\end{equation}
+$\forall \eta^i \in H^{1/2}$ with $\eta^i=0$ on $\Gamma^i_D$, where $\e^{ip}$ is determined by the corrector step (radial return) as described below.
+
+
+% \subsubsection{Discrete weak formulation}
+
+
+We use both boundaries  $\Gamma^{\ms}$ and $\Gamma^{\sl}$  piecewise linear continuous functions for the displacement and piecewise constant discontinuous functions for the traction. We needed the discretization of the traction space for computing the discrete inverse of the single layer potential $V^{-1}$. We assume again,  that both meshes do not fit each other on the contact boundary. We also assume, that there are no changes of boundary conditions type within one edge.  The linear system $\mathfrak  A \mathfrak x = {\mathfrak b}$ has the following form
+
+\begin{equation*}
+ \begin{array}{r}
+   \left (
+   \begin{array}{cccc}
+   S_{\Gamma^{\sl}_N}    & S^{T}_{\Gamma^{\sl}_C,\Gamma^{\sl}_N}                 & 0                & 0\\
+   S_{\Gamma^{\sl}_C,\Gamma^{\sl}_N} & S_{\Gamma^{\sl}_C} + \mathcal{C}^{\sl \sl}   & -\mathcal{C}^{\sl \ms}& 0 \\
+   0               & -\mathcal{C}^{\ms \sl} & \mathcal{C}^{\ms \ms}+ S_{\Gamma^{\ms}_C}  & S^T_{\Gamma^{\ms}_C,\Gamma^{\ms}_N} \\
+   0               & 0                 & S_{\Gamma^{\ms}_C,\Gamma^{\ms}_N} & S_{\Gamma^{\ms}_M}
+   \end{array}
+   \right )
+ \left (
+  \begin{array}{l}
+      \mathfrak x^{\sl}_{\Gamma_N^{\sl}} \\
+      \mathfrak x^{\sl}_{\Gamma_C^{\sl}} \\
+      \mathfrak x^{\ms}_{\Gamma_C^{\ms}} \\
+      \mathfrak x^{\ms}_{\Gamma_N^{\ms}} 
+  \end{array}
+ \right )
+= \\
+ {\mathfrak b}^{ext} - {\mathfrak b}^{int} + {\mathfrak b}_{\bv{\e}^p} +
+ \left (
+  \begin{array}{r}
+      0 \\
+      {\mathfrak b}^{\sl}_{\Gamma_C^{\sl}} \\
+      -{\mathfrak b}^{\ms}_{\Gamma_C^{\ms}} \\
+      0 
+  \end{array}
+ \right ).
+ \end{array}
+\end{equation*}
+
+Note that only the contact blocks $\mathcal{C}^{\sl \sl}$, $\mathcal{C}^{\sl \ms}$, $\mathcal{C}^{\ms \sl}$, $\mathcal{C}^{\ms \ms}$ of the matrix are updated, which corresponds to backward Euler scheme for contact  and forward Euler scheme for plasticity.  With $S_{\Gamma}$ the boundary element  block for the Steklov operator is denoted. For  implementation issues see the Appendix.
+
+\subsection{FEM/BEM}\label{sec:FEMBEM}
+
+Based on the two previous sections, we can easily derive a  FE-BE coupling method. In the following we discuss briefly the main points. Without loss of generality we use BEM discretization for the slave body and FEM discretization for the master body. With the  discrete spaces
+\[
+\hSpace{\bv{\mcV}}_D := \hSpace{\bv{\cV}}^{\sl}_D \times \hSpace{\bv{V}}^{\ms}_D, \qquad \hSpace{\bv{\mcV}}_0 := \hSpace{\bv{\cV}}^{\sl}_0 \times \hSpace{\bv{V}}^{\ms}_0,
+\]
+the coupling formulation now will be: Find $\bv{u}_{h} = (\bv u^{\sl}_h,\bv u^{\ms}_h) \in \hSpace{\bv{\mcV}}_D$:
+\begin{equation}  \label{WeakFormF_FEMBEM}
+\mF^{int}(\bv{u}_{h},\bv{\eta}_h) - \mP_{\bv{u}_{h}} ( \bv{\e}_{h}^p,\bv{\eta}_h) = \mF^{ext}(\bv\eta_h) \qquad \forall \bv{\eta}_h \in \hSpace{\bv{\mcV}}_0,
+\end{equation}
+where
+\begin{align*}
+\mF^{int}(\bv{u}_{h},\bv{\eta}_h) &:= 
+(\bv{\sigma}_{h}^i,\bv{\e}(\bv{\eta}^i_h))_{\Omega^{\ms}} 
++ \left\langle S \bv{u}^i, \bv{\eta}^i \right\rangle_{\Sigma^{\sl}} 
+- \sum_{i=\sl,\ms} \left\langle \bv{t}_{\epsilon_C}^i, \bv{\eta}^i_h\right\rangle_{\Gamma_C}, \\
+\mP_{\bv{u}_{h}} ( \bv{\e}_{h}^p,\bv{\eta}_h) &:= 
+ \left\langle  N (\div[\C^i : \bv{\e}_{h}^{ip}]), \bv{\eta}^i \right\rangle_{\Sigma^{\sl}}
+- \left\langle [\C^i : \bv{\e}_{h}^{ip}] \cdot \bv{n}, \bv{\eta}^i\right\rangle_{\Sigma^{\sl}} \\[2ex]
+\mF^{ext}(\bv\eta_h) &:= 
+\left\langle N \given{\bv{f}}^i, \bv{\eta}^i \right\rangle_{\Sigma^{\sl}}
++ ( \given{\bv{f}}^i, \bv{\eta}^i)_{\Omega^{\ms}}
++ \sum_{i=\sl,\ms} \left\langle \given{\bv{t}}^i, \bv{\eta}^i_h \right\rangle_{\Gamma^i_N}, \\
+\bv{\sigma}^i_h &:= \bv{\sigma}(\bv u^i_h), \qquad \bv{\e}_{h}^{ip} := \bv{\e}^p(\bv u^i_h), \qquad \bv{t}_{\epsilon_C} := \bv{t}_{\epsilon_C}(\bv{u}^i_h).
+\end{align*}
+
+We can use an incremental loading process analogously to above one together with Newthon method. Then we end up with a linear system ${\mathfrak A} {\mathfrak x} = {\mathfrak b}$ given by
+\begin{equation*}
+ \begin{array}{r}
+   \left (
+   \begin{array}{cccc}
+   S_{\Gamma^{\sl}_N}    & S^{T}_{\Gamma^{\sl}_C,\Gamma^{\sl}_N}                 & 0                & 0\\
+   S_{\Gamma^{\sl}_C,\Gamma^{\sl}_N} & S_{\Gamma^{\sl}_C} + \mathcal{C}^{\sl \sl}   & -\mathcal{C}^{\sl \ms}& 0 \\
+   0               & -\mathcal{C}^{\ms \sl} & \mathcal{C}^{\ms \ms}+ C^{pl}_{\Gamma^{\ms}_C}  & (B^{pl}_{\Gamma^{\ms}_C})^T \\
+   0               & 0                 & B^{pl}_{\Gamma^{\ms}_C} & A^{pl}_{\Omega^{\ms}}
+   \end{array}
+   \right )
+ \left (
+  \begin{array}{l}
+      \mathfrak x^{\sl}_{\Gamma_N^{\sl}} \\
+      \mathfrak x^{\sl}_{\Gamma_C^{\sl}} \\
+      \mathfrak x^{\ms}_{\Gamma_C^{\ms}} \\
+      \mathfrak x^{\ms}_{\Gamma_N^{\ms}} 
+  \end{array}
+ \right )
+= \\
+ {\mathfrak b}^{ext} - {\mathfrak b}^{int} + {\mathfrak b}_{\bv{\e}^p} +
+ \left (
+  \begin{array}{r}
+      0 \\
+      {\mathfrak b}^{\sl}_{\Gamma_C^{\sl}} \\
+      -{\mathfrak b}^{\ms}_{\Gamma_C^{\ms}} \\
+      0 
+  \end{array}
+ \right ).
+ \end{array}
+\end{equation*}
+The meaning of the particular terms is the same as in the above linear systems describing  FEM/FEM and BEM/BEM approaches.
+
+
+
+\fbox{\begin{minipage}[c]{15cm}
+\begin{BOX}\label{box:ReturnMappingConsistencyConditionPlasticity} Consistency Condition. Determination of $\Delta \gamma$ (see \cite{SiHu98})
+
+\begin{enumerate}
+\item Initialize. 
+\begin{eqnarray}
+\Delta \gamma^{(0)} &:=&0, \nonumber \\
+\alpha_{n+1}^{(0)} &:=&0.\nonumber
+\end{eqnarray}
+\item Iterate.
+
+DO UNTIL~:~ $|g(\Delta \gamma^{(k)})|~<~TOL$,
+
+$k \leftarrow k+1$
+\subitem 2.1. Compute iterate $\Delta \gamma^{(k+1)}$ :
+\begin{eqnarray}
+g(\Delta \gamma^{(k)})  &:=& -\sqrt{\frac{2}{3}} K(\alpha_{n+1}^{(k)})+ \|\xi_{n+1}^{trial}\| \nonumber \\
+                        &-&\left( 2 \mu \Delta \gamma^{(k)} +\sqrt{\frac{2}{3}} \left(H(\alpha_{n+1}^{(k)}) -H(\alpha_{n}^{(k)}) \right) \right) \nonumber \\
+Dg(\Delta \gamma^{(k)}) &:=& -2 \mu\left( 1+\frac{H'(\alpha_{n+1}^{(k)})+K'(\alpha_{n+1}^{(k)})}{3 \mu}\right) \nonumber \\
+\Delta \gamma^{(k+1)   }&:=&\Delta \gamma^{(k)} -\frac{g(\Delta \gamma^{(k)})}{Dg(\Delta \gamma^{k})} \nonumber
+\end{eqnarray}
+
+\subitem 2.2. Update equivalent plastic strain
+
+$$
+\alpha_{n+1}^{(k+1)}=\alpha_n+\sqrt{\frac{2}{3}}\Delta \gamma^{(k+1)}
+$$
+\end{enumerate}
+
+\end{BOX}
+\end{minipage} }
+
+
+\fbox{\begin{minipage}[c]{15cm}
+\begin{BOX}\label{box:ReturnMappingPlasticity} Radial Return Algorithm..  Nonlinear Isotropic/Kinematic Hardening (see \cite{SiHu98})
+
+\begin{enumerate}
+\item Compute  trial elastic stress.
+\begin{eqnarray}
+ \mathbf{e}_{n+1} &:=& \bv{\e}_{n+1}-\frac{1}{3} (\tr[\bv{\e}_{n+1}])\mathbf 1 \nonumber \\
+ \bv{s}^{trial}_{n+1} &:=&2 \mu (\mathbf{e}_{n+1}-\mathbf{e}_n^p) \nonumber \\
+ \bv{\xi}_{n+1}^{trail}&:=&\bv{s}^{trial}_{n+1} - \bv{\beta}_{n+1} \nonumber 
+\end{eqnarray}
+
+\item Check yield condition
+
+$$ \yieldf_{n+1}^{trial} := \| \bv{\xi} _{n+1}^{trail}\| - \sqrt{\frac{2}{3}} K (\alpha_n)$$
+
+IF $\yieldf_{n+1}^{trial}<0$ THEN:
+
+$$
+\begin{array}{l}
+Set ~~(o)_{n+1}:=(o)_{n+1}^{trial} ~~\& ~~EXIT \\
+
+\end{array}
+$$
+ENDIF.
+\item Compute $\mathbf{n}_{n+1}$ and find $\Delta \gamma$ from BOX \ref{box:ReturnMappingConsistencyConditionPlasticity}. Set
+\begin{eqnarray}
+\mathbf{n}_{n+1} &:=& \frac{\bv{\xi} _{n+1}^{trail}}{\|\bv{\xi}_{n+1}^{trail}\|}, \nonumber \\
+ \alpha_{n+1} &:=& \alpha_n+\sqrt{\frac{2}{3}} \Delta \gamma \nonumber 
+\end{eqnarray}
+\item Update back stress, plastic strain and stress
+\begin{eqnarray}
+\bv{\beta}_{n+1}&:=&\bv{\beta}_n+\sqrt{\frac{2}{3}}[H(\alpha_{n+1})-H(\alpha_n)] \mathbf{n}_{n+1}, \nonumber \\
+\mathbf{e}_{n+1}^{p} &:=& \mathbf{e}_n^p+ \Delta \gamma \mathbf{n}_{n+1}, \nonumber \\
+\bv{\sigma}_{n+1} &:=& k \tr[\bv{\e}_{n+1}] \mathbf{1} +\bv{s}_{n+1}^{trial}- 2 \mu \Delta \gamma \mathbf{n}_{n+1}.\nonumber 
+\end{eqnarray}
+\item Compute $consistent~elastoplastic~tangent~moduli$
+\begin{eqnarray}
+\mathbf{C}_{n+1}&:=&k \mathbf{1} \otimes \mathbf{1} + 2 \mu \vartheta_{n+1}[\mathbf{I}- \frac{1}{3}\mathbf{1} \otimes \mathbf{1} ]-2 \mu \bar{\vartheta}_{n+1} \mathbf{n}_{n+1} \otimes \mathbf{n}_{n+1}, \nonumber \\
+\vartheta_{n+1} &:=& 1-\frac{2 \mu \Delta \gamma}{ \| \bv{\xi} _{n+1}^{trail}\|}, \nonumber \\
+\bar{\vartheta}_{n+1} &:=& \frac{1}{1+\frac{[K'+H']_{n+1}}{3\mu}}-(1-\bar{\vartheta}_{n+1}).\nonumber 
+\end{eqnarray}
+\end{enumerate}
+\end{BOX}
+\end{minipage} }
+
+
+
+
+\section{Contact functional investigation}\label{sec:ContactFunctionalInvestigation}
+% We can rewrite interface constitutive equations (\ref{eq:RelativeVelocityDecomposition})-(\ref{eq:PlasticContactDescriptionKuhnTackerCondition}) in terms of relative displacements. In order to to obtain relative displacements on the contact boundary we consider Box \ref{box:KineticKinematicConditions}, consequently we can define relative penetration at contact point $\zeta^{\sl}$ by 
+Recall the definition of the yield contact function ($\bv{t}:=(\sigma_{\cn},\bv{\sigma}_{\ct})$)
+% \begin{equation}
+% \Delta \bv{u}(t,\zeta^{\sl}):=\Int_{0}^{t} \bv{\gamma}(\xi,\zeta^{\sl})\, d\xi,
+% \end{equation}
+
+\begin{figure}[h]
+\begin{minipage}{7cm}
+\begin{center}
+\includegraphics[scale=0.4]{yield.surface.traction.canvas4.eps}\end{center}
+\caption{Admissible region  of traction}\label{TractionAdmissibeRegion}
+\end{minipage}
+\begin{minipage}{7cm}
+\begin{center}
+\includegraphics[scale=0.4]{yield.surface.penetration.eps}\end{center}
+\caption{Elastic and plastic  regions of penetration}\label{PenetrationAdmissibeRegion}
+\end{minipage}
+\end{figure}
+
+
+\begin{equation}
+ \yieldf_{C}(\bv{t})=\|\bv{\sigma}_{\ct}\|+\mu_{f}\sigma_{\cn},\quad \yieldf_{C}: \bv{t}\mapsto \R.
+\end{equation}
+
+
+\textit{decomposition of stain} 
+\begin{equation}\label{eq:Contact:StrainDecomposition}
+\bv{\gap}=\bv{\gap}^e+\bv{\gap}^p,
+\end{equation}
+\textit{stress-strain relationship} 
+\begin{equation}\label{eq:Contact:StressStrainRelationship}
+\bv{t}=-\D \bv{\gap}^e, \mbox{ where } \D \bv{\gap}^e:=(\dfrac{1}{\epsilon_{\cn}}\gap_{\cn}^e,\dfrac{1}{\epsilon_{\ct}}\bv{\gap}_{\ct}^e)^T,
+\end{equation}
+\textit{yield condition} 
+\begin{equation}\label{eq:Contact:YieldCondition}
+\yieldf_{C}(\bv{t})\leq 0,
+\end{equation}
+flow rule for \textit{plastic strain rate} 
+\begin{equation}\label{eq:Contact:FlowRule}
+\dot{\bv{\gap}}^p=\dot{\gamma}(t,\zeta^{\sl}) \dfrac{\partial \yieldf_{C}(\bv{t})}{\partial \bv{t}}.
+\end{equation}
+
+where $\D$ is the analog of the Hooke's tensor in the theory of linear elasticity  and has the same major properties: positive definiteness and symmetry, while
+
+\begin{equation}\label{ContactHooksTensorDef}
+\D =\left(\begin{array}{cc}
+\dfrac{1}{\epsilon_{\cn}} & 0\\
+0 & \dfrac{1}{\epsilon_{\ct}}
+\end{array}\right).
+\end{equation}
+
+The contact return mapping projection, for given traction $\bv{t}(t,\zeta^{\sl})$ maps the increment of the interpenetration $\Delta \bv{\gap}(t,\Delta t,\zeta^{\sl}):=\bv{\gap}(t+\Delta t,\zeta^{\sl})-\bv{\gap}(t,\zeta^{\sl})$ to the increment of the contact traction $\Delta \bv{t}(t,\Delta t,\zeta^{\sl}):=\bv{t}(t+\Delta t,\zeta^{\sl})-\bv{t}(t,\zeta^{\sl})$. For a fixed traction vector $\bv{t}(t,\zeta^{\sl})$  we consider the return mapping operator $\bv{T}_{C}: \Delta \bv{\gap} \mapsto \Delta \bv{t}$  defined by
+
+\begin{equation}\label{ContactReturnMaping}
+\bv{T}_{C}(\Delta \bv{\gap}(t,\Delta t,\zeta^{\sl})):= \left\{
+\begin{array}{lc}
+-\D \Delta \bv{\gap}(t,\Delta t,\zeta^{\sl}), & \\ &\hspace{-6cm}\mbox{ if } \yieldf_{C}(\bv{t}(t,\zeta^{\sl})-\D \Delta\bv{\gap}(t,\Delta t,\zeta^{\sl})) \leq 0, \\[2ex]
+\begin{array}{l}-\D \Delta \bv{\gap}(t,\Delta t,\zeta^{\sl}) + \gamma_R (t,\Delta t,\zeta^{\sl})\hat{\bv{n}}(t,\zeta^{\sl})\end{array}, & \\ &\hspace{-6cm}\mbox{ if } \yieldf_{C}(\bv{t}(t,\zeta^{\sl})-\D \Delta\bv{\gap}(t,\Delta t,\zeta^{\sl})) > 0,
+\end{array}
+\right.
+\end{equation}
+where
+
+\begin{equation}
+\hat{\bv{n}}(t,\Delta t,\zeta^{\sl}):=-\frac{\D  \frac{\partial \yieldf_{C}}{\partial \bv{t}} }{\| \D\frac{ \partial\yieldf_{C}}{\partial \bv{t}}\|}=-\frac{  \left(\mu_{f}  \frac{1}{\epsilon_{\cn}},\frac{1}{\epsilon_{\ct}} \sign(t_{\ct}(t,\zeta^{\sl})-\frac{1}{\epsilon_{\ct}} \Delta \gap_{\ct}(t,\Delta t,\zeta^{\sl}) )\right)  }{\sqrt{\mu_{f}^2  \frac{1}{\epsilon_{\cn}^2} + \frac{1}{\epsilon_{\ct}^2} }}.
+\end{equation}
+
+
+The vector $\hat{\bv{n}}$ is a normal vector to the yield surface $\yieldf_{C}(\bv{\gap}):=\yieldf_{C}(\bv{t}-\D \bv{\gap})=0$ at a boundary point $\bv{t}-\D \bv{\gap}$ (see Fig. \ref{PenetrationAdmissibeRegion}).
+
+\begin{remark}
+For convenience we do not explicitly stress the dependence of the return mapping operator $\bv{T}_{C}$ on the value of the boundary traction $\bv{t}$, since the investigation below is carried out for a fixed $\bv{t}$. But for the investigation of the solution procedure or for the numerical implementation one has to take this relation into account.
+\end{remark}
+
+\begin{thm}\label{thm:ContactFunctionalDifferentiability} For given fixed $\bv{t}\in S_C$ and $\forall \bv{\gap}\in \R^{2}$ there holds
+
+1) if $\bv{t}-\D \bv{\gap}\in S_C^{ep}$, then
+
+$\bv{T}_{C}$ has the Frechet derivative $\bv{T}_{C}'(\bv{\gap})\bv{\eta}:=\Lim_{\theta\rightarrow 0} \frac{\bv{T}_{C}(\bv{\gap}+\theta\bv{\eta})-\bv{T}_{C}(\bv{\gap})}{\theta}$ 
+
+\begin{equation}\label{DerivativeContactFunctionalEP}
+\bv{T}_{C}'(\bv{\gap})\bv{\eta}=\left\{
+\begin{array}{lc}
+-\D \bv{\eta}, & \bv{t}-\D\bv{\gap}\in S_C^e, \\
+-\D \bv{\eta}+\frac{ \hat{\bv{n}} \bv{\eta} (\frac{1}{\epsilon_{\ct}^2}+\frac{1}{\epsilon_{\cn}^2}\mu_{f}^2) }{ \frac{1}{\epsilon_{\ct}}+\frac{1}{\epsilon_{\cn}}\mu_{f}^2 }\hat{\bv{n}}, & \bv{t}-\D\bv{\gap}\in S_C^p.
+\end{array}\right.
+\end{equation}
+
+2) if $\bv{t}-\D \bv{\gap}\in S_C^{i}(t,\zeta^{\sl})\cup\left\lbrace \bv{t} \middle|~\|\bv{\sigma}_{\ct}\|\neq 0\right\rbrace$  there exists only one side derivative
+
+\begin{equation}
+\bv{T}_{C}'(\bv{\gap}_{+})\bv{\eta}:=\Lim_{\theta\rightarrow 0}\frac{\bv{T}_{C}(\bv{\gap}+\theta\bv{\eta})-\bv{T}_{C}(\bv{\gap})}{\theta},
+\end{equation}
+
+\begin{equation}\nonumber
+\bv{T}_{C}'(\bv{\gap}_{+})\bv{\eta}=\left\{
+\begin{array}{lc}
+-\D \bv{\eta}+\frac{ \hat{\bv{n}} \bv{\eta} (\frac{1}{\epsilon_{\ct}^2}+\frac{1}{\epsilon_{\ct}^2}\mu_{f}^2) }{ \frac{1}{\epsilon_{\ct}}+\frac{1}{\epsilon_{\ct}}\mu_{f}^2 }\hat{\bv{n}}, & \yieldf_{C}(\bv{t}(t,\zeta^{\sl})-\D \bv{\gap})=0, ~\|\bv{\sigma}_{\ct}-\frac{1}{\epsilon_{\ct}}\bv{\gap}_{\ct}\|\neq 0, \\
+&  \bv{\eta}\hat{\bv{n}} \geq 0, \\[3ex]
+-\D \bv{\eta} , & \yieldf_{C}(\bv{t}(t,\zeta^{\sl})-\D \bv{\gap})=0, ~\|\bv{\sigma}_{\ct}-\frac{1}{\epsilon_{\ct}}\bv{\gap}_{\ct}\|\neq 0, \\
+&  \bv{\eta}\hat{\bv{n}} < 0.
+% \\[3ex]
+% ? , & \yieldf_{C}(\bv{t}(t,\zeta^{\sl})-\D \bv{\gap})>0, \\
+% &  \bv{\eta}\hat{\bv{n}} < 0.
+\end{array}\right.
+\end{equation}
+\end{thm}
+
+
+\begin{thm}\label{thm:ContactFunctionalSymmetricityPositivity}
+For fixed $\bv{t}\in S^{e}_C$, the derivative $\bv{T}_{C}'(\bv{\gap})$, $\bv{t}-\D\bv{\gap}\in S_C^{ep}$, is symmetric and negative semi-definite (non-positive).
+\end{thm}
+
+
+\begin{thm}\label{thm:ContactFunctionalLipschitzContinuity}
+For given fixed $\bv{t}\in S_C$ and for all $\bv{\gap}$ with $\bv{t}-\D\bv{\gap}\in S_C^{ep}$ the derivative $\bv{T}_{C}'(\bv{\gap})$, is Lipschitz continuous.
+\end{thm}
+
+
+The return mapping algorithm presented above corresponds to the implicit time discretization of the constitutive law (\ref{eq:Contact:StrainDecomposition})-(\ref{eq:Contact:FlowRule}). The explicit integration of the model (\ref{eq:Contact:StrainDecomposition})-(\ref{eq:Contact:FlowRule}) can be done in the same way as for the elastoplasticity \cite{AxBlKo97,BlAx97,KoLa84}. For that reason we use the incremental constitutive relation
+\begin{equation}\label{eq:Contact:Explicit:DotTractionDotGap}
+ \dot{\bv{t}}=\D_{ep}(\bv{t},\dot{\bv{\gap}})\dot{\bv{\gap}},
+\end{equation}
+where 
+\begin{equation}\label{eq:Contact:Explicit:DepDefinition}
+\D_{ep}(\bv{t},\dot{\bv{\gap}}):=\D-\rho_{C}(\bv{t},\dot{\bv{\gap}})\D_{p}(\bv{t}),
+\end{equation}
+with $\rho_{C}(\bv{t},\dot{\bv{\gap}})$:
+\begin{equation}\label{eq:Contact:Explicit:rhoDefinition}
+\rho_{C}(\bv{t},\dot{\bv{\gap}}):=\left\lbrace \begin{array}{cc} 0,& \mbox{ if } \left(\frac{\partial \yieldf_{C}}{\partial \bv{t}}\right)^T \D \dot{\bv{\gap}}\leq 0,\\[2ex] 1, &\mbox{ if } \left(\frac{\partial \yieldf_{C}}{\partial \bv{t}}\right)^T \D \dot{\bv{\gap}}>0,\end{array}\right.
+\end{equation}
+\begin{equation}\label{eq:Contact:Explicit:DpDefinition}
+\D_{p}(\bv{t}):=\frac{\D\frac{\partial \yieldf_{C}}{\partial \bv{t}}\left(\frac{\partial \yieldf_{C}}{\partial \bv{t}}\right)^T\D}{\left(\frac{\partial \yieldf_{C}}{\partial \bv{t}}\right)^T\D \frac{\partial \yieldf_{C}}{\partial \bv{t}}}.
+\end{equation}
+The explicit time discretization of (\ref{eq:Contact:Explicit:DotTractionDotGap}) leads to 
+\begin{equation}\label{eq:Contact:ExplicitDiscretization:DotTractionDotGap}
+ \Delta \bv{t}=\D_{ep}(\bv{t},\Delta \bv{\gap})\Delta \bv{\gap},
+\end{equation}
+where 
+\begin{equation}\label{eq:Contact:ExplicitDiscretization:DepDefinition}
+\D_{ep}(\bv{t},\Delta \bv{\gap}):=\D-\rho_{C}(\bv{t},\Delta \bv{\gap})\D_{p}(\bv{t}),
+\end{equation}
+with $\rho_{C}(\bv{t},\Delta \bv{\gap})$:
+\begin{equation}\label{eq:Contact:ExplicitDiscretization:rhoDefinition}
+\rho_{C}(\bv{t},\Delta \bv{\gap}):=\left\lbrace \begin{array}{cc} 0,& \mbox{ if } \yieldf_{C}(\bv{t}-\D \Delta \bv{\gap})\leq 0,\\ 1, &\mbox{ if } \yieldf_{C}(\bv{t}-\D \Delta \bv{\gap})>0.\end{array}\right.
+\end{equation}
+The operator $\D_{ep}$ (\ref{eq:Contact:ExplicitDiscretization:DepDefinition}) is not continuous due to the jump function $\rho_{C}(\bv{t},\Delta \bv{\gap})$ (\ref{eq:Contact:ExplicitDiscretization:rhoDefinition}). Employing the regularization procedure used in \cite{KoLa84,BlAx97}, we smooth the function $\rho_{C}(\bv{t},\Delta \bv{\gap})$ introducing its approximation $\rho_{C,\delta}(\bv{t},\Delta \bv{\gap})$ for $\delta>0$:
+\begin{equation}\label{eq:Contact:ExplicitDiscretization:rhoDeltaDefinition}
+\rho_{C,\delta}(\bv{t},\Delta \bv{\gap}):=\left\lbrace \begin{array}{cc} 0,& \mbox{ if } \yieldf_{C}(\bv{t}-\D \Delta \bv{\gap})\leq -\delta,\\[2ex] 1+\frac{\yieldf_{C}(\bv{t}-\D \Delta \bv{\gap})}{\delta},& \mbox{ if } -\delta < \yieldf_{C}(\bv{t}-\D \Delta \bv{\gap})\leq 0, \\[2ex] 1, &\mbox{ if } \yieldf_{C}(\bv{t}-\D \Delta \bv{\gap})>0.\end{array}\right.
+\end{equation}
+
+
+Thus, the $\delta$-regularization of (\ref{eq:Contact:ExplicitDiscretization:DotTractionDotGap}) is carried out for $\delta>0$:
+\begin{equation}\label{eq:Contact:ExplicitDiscretization:DotTractionDotGapRegularized}
+ \Delta \bv{t}=\D_{ep,\delta}(\bv{t},\Delta \bv{\gap})\Delta \bv{\gap},
+\end{equation}
+where
+\begin{equation}\label{eq:Contact:ExplicitDiscretization:DepDefinitionRegularized}
+\D_{ep,\delta}(\bv{t},\Delta \bv{\gap}):=\D-\rho_{C,\delta}(\bv{t},\Delta \bv{\gap})\D_{p}(\bv{t}).
+\end{equation}
+
+
+
+
+\section{A Newton-type method for two-body elastoplastic contact with friction}\label{sec:NewtonTypeMethod}
+We extend a Newton-type algorithm for elastoplasticity with hardening investigated in \cite{Bl97,AxBlKo97}  onto two-body elastoplastic problem with regularized  contact  with friction. The contact regularization is done as in Section \ref{sec:ContactFunctionalInvestigation}. Our approach is based on the implicit computation of the increment of the stress (contact traction) using the increment of the strain (relative contact gap).  In the literature this method is referred to as Return Mapping Algorithm.
+Consider  a discrete problem (\ref{WeakFormF_n}) defined in Section \ref{sec:FEMFEM}. Subtracting the equation at time step  $n-1$ from the the equation at time step $n$ we obtain
+\begin{equation} \label{NTM:DeltaWeakFormF_n}
+F^{int}_{\bv{u}_h}(\Delta(\bv{\sigma}^i)_{n},\Delta(\bv{t}_{\epsilon_C})_{n},\bv{\eta}_h) = \Delta F^{ext}_{n}(\bv{\eta}_h) \qquad \forall \bv{\eta}_h \in \hSpace{\bv{V}}_0,
+\end{equation}
+where the contact and the elastoplastic constitutive conditions from Section \ref{sec:ContactFunctionalInvestigation} and Section \ref{sec:ElPlContact:DiscretizationSolutionProcedure} are given via
+\begin{eqnarray}
+\Delta(\bv{\sigma}^i)_{n}&=&\bv{T}^{i}_{pl}((\bv{\sigma}^i)_{n-1},(\bv{\xi}^i)_{n-1},\Delta(\bv{\e}^i)_{n}),\label{eq:NTM:StressReturnMappingIncrementFunctional} \\
+\Delta(\bv{\xi}^i)_{n}&=&\bv{G}^{i}_{pl}((\bv{\sigma}^i)_{n-1},(\bv{\xi}^i)_{n-1},\Delta(\bv{\e}^i)_{n}),\label{eq:NTM:InternalVariableReturnMappingIncrementFunctional} \\
+\Delta(\bv{\e}^i)_{n}&=&\bv{\e}(\Delta(\bv{u}^i)_{n}),\nonumber \\
+\Delta(\bv{t}_{\epsilon_C})_{n}&=&\bv{T}_{C}((\bv{t}_{\epsilon_C})_{n-1},\Delta(\bv{u}^{\ms}-\bv{u}^{\sl})_{n}),\label{eq:NTM:ContactReturnMappingIncrementFunctional} 
+\end{eqnarray}
+where $\Delta(\bullet)_n:=(\bullet)_{n}-(\bullet)_{n-1}$, $\bv{\xi}$ in our case is $\bv{\xi}:=(\alpha,\beta)$. A return mapping algorithm for plasticity (Section \ref{sec:ElPlContact:DiscretizationSolutionProcedure}) maps $(\bv{u}^i)_{n}$, $(\bv{u}^i)_{n-1}$, $(\bv{\xi}^i)_{n-1}$, $(\bv{\e}^{ip})_{n-1}:=\bv{\e}((\bv{u}^{i})_{n-1})-(\C^{i})^{-1}:(\bv{\sigma}^i)_{n-1}$ onto $(\bv{\xi}^i)_{n}$ and $(\bv{\e}^{ip})_{n}:=\bv{\e}((\bv{u}^{i})_{n})-(\C^{i})^{-1}:(\bv{\sigma}^i)_{n}$ (or $(\bv{\xi}^i)_{n}$ and $(\bv{\sigma}^i)_{n}$); exactly this is  written in functional form in (\ref{eq:NTM:StressReturnMappingIncrementFunctional}), (\ref{eq:NTM:InternalVariableReturnMappingIncrementFunctional}).  A return mapping algorithm for contact (\ref{ContactReturnMaping}) in Section \ref{sec:ContactFunctionalInvestigation}  maps $\Delta \bv{\gap}:= \left((\bv{u}^{\ms})_{n}-(\bv{u}^{\sl})_{n}\right)$ and  $(\bv{t}_{\epsilon C})_{n-1}$ onto  $\Delta (\bv{t}_{\epsilon C})_{n}$; exactly this is  written in functional form in (\ref{eq:NTM:ContactReturnMappingIncrementFunctional}).
+
+
+\begin{equation} \label{NTM:DeltaWeakFormF_nU_vector}
+\mathcal{F}(\Delta \mathbf{U}_{n}) = \Delta f_{n}.
+\end{equation}
+
+Then  the Newton-type Method for (\ref{NTM:DeltaWeakFormF_nU_vector}) reads as follows.
+
+Start with an initial guess $\Delta \mathbf{U}^{(0)}_{n}$, 
+
+for $i=1,2\ldots$ iterate
+\begin{enumerate}
+ \item find Newton increment $\bv{\delta}^{(i)}$ satisfying
+\begin{equation} \label{NTM:DeltaWeakFormF_nU_vector_NewtonStepEquationForIncrement}
+\mathcal{F}^{'}(\Delta \mathbf{U}^{(i-1)}_{n})\cdot \bv{\delta}^{(i)} =r^{(i-1)}:= \Delta f_{n}-\mathcal{F}(\Delta \mathbf{U}^{(i-1)}_{n}).
+\end{equation}
+
+\item Update 
+\begin{equation}\label{NTM:DeltaWeakFormF_nU_vector_NewtonStepIncrementUpdate}
+\Delta \mathbf{U}^{(i)}_{n}:=\Delta \mathbf{U}^{(i-1)}_{n}+\bv{\delta}^{(i)}.
+\end{equation}
+
+\end{enumerate}
+continue
+
+For fixed time step $n$ we have the following theorem that provides convergence of Newton Method suggested above in this section. For convenience we will omit subscript $n$.
+\begin{thm}\label{thm:NTM:NewtonTypeMethodConvergence}
+ Assume that
+\begin{enumerate}
+ \item the system (\ref{NTM:DeltaWeakFormF_nU_vector}) has a solution $\Delta \mathbf{U} \in \R^{N}$,
+ \item $\Delta \mathbf{U}^{(0)}$ be a sufficiently good initial guess of $\Delta \mathbf{U}$,
+ \item the Newton Iterations (\ref{NTM:DeltaWeakFormF_nU_vector_NewtonStepEquationForIncrement}), (\ref{NTM:DeltaWeakFormF_nU_vector_NewtonStepIncrementUpdate}) are well defined, i.e. $\Delta \mathbf{U}^{(i)} \in \R_{ep}^{N}$ for $i=1,2,\ldots$
+\end{enumerate}
+Then, the Newton Iterations $\Delta \mathbf{U}^{(i)}$ converge quadratically to the solution $\Delta \mathbf{U}$ of  (\ref{NTM:DeltaWeakFormF_nU_vector}), that exists by the first assumption. 
+\end{thm}
+\begin{remark}
+ $\R_{ep}^{N}$ in Theorem \ref{thm:NTM:NewtonTypeMethodConvergence} is an intersection of elastoplastic region (see \cite{Bl97}) and \textit{elastoplastic} contact region ( cf. $S_C^{ep}(\Gamma)$  in Section \ref{sec:ContactFunctionalInvestigation} )
+\end{remark}
+
+
+
+
+\section{Newton-like iterations for two-body elastoplastic contact with friction}\label{sec:NewtonLikeIteration}
+We extend a Newton-like iterations for elastoplasticity with hardening investigated in \cite{AxBlKo97,BlAx97}  onto two-boy elastoplastic problem with regularized  contact  with friction. The $\dot{\bv{\sigma}}-\dot{\bv{\e}}$ relation is regularized as in  \cite{KoLa84,AxBlKo97,BlAx97}, whereas the regularization for contact done as in Section \ref{sec:ContactFunctionalInvestigation}. Our approach is based on the explicit computation of the increment of the stress (contact traction) using the increment of the strain (relative contact gap).  In the literature this method is referred as Prandtl-Reuss stress computation. 
+Consider  a discrete problem (\ref{NTM:DeltaWeakFormF_n}) defined in Section \ref{sec:NewtonTypeMethod}.
+\begin{equation} \label{NLI:DeltaWeakFormF_n}
+F^{int}_{\bv{u}_h}(\Delta(\bv{\sigma}^i)_{n},\Delta(\bv{t}_{\epsilon_C})_{n},\bv{\eta}_h) = \Delta F^{ext}_{n}(\bv{\eta}_h) \qquad \forall \bv{\eta}_h \in \hSpace{\bv{V}}_0,
+\end{equation}
+where the contact and the elastoplastic constitutive conditions from Section \ref{sec:ContactFunctionalInvestigation} and Section \ref{sec:ElPlContact:DiscretizationSolutionProcedure} are given via
+\begin{eqnarray}
+\Delta(\bv{\sigma}^i)_{n}&=&\tilde{\bv{T}}^{i}_{pl}((\bv{\sigma}^i)_{n-1},(\bv{\xi}^i)_{n-1},\Delta(\bv{\e}^i)_{n})\Delta(\bv{\e}^i)_{n},\label{eq:NLI:StressReturnMappingIncrementFunctional} \\
+\Delta(\bv{\xi}^i)_{n}&=&\tilde{\bv{G}}^{i}_{pl}((\bv{\sigma}^i)_{n-1},(\bv{\xi}^i)_{n-1},\Delta(\bv{\e}^i)_{n})\Delta(\bv{\e}^i)_{n},\label{eq:NLI:InternalVariableReturnMappingIncrementFunctional} \\
+\Delta(\bv{\e}^i)_{n}&=&\bv{\e}(\Delta(\bv{u}^i)_{n}),\nonumber \\
+\Delta(\bv{t}_{\epsilon_C})_{n}&=&\tilde{\bv{T}}_{C}((\bv{t}_{\epsilon_C})_{n-1},\Delta(\bv{u}^{\ms}-\bv{u}^{\sl})_{n})(\Delta(\bv{u}^{\ms}-\bv{u}^{\sl})_{n}),\label{eq:NLI:ContactReturnMappingIncrementFunctional} 
+\end{eqnarray}
+
+We have for $F^{int}_{\bv{u}_h}$ defined in  Section \ref{sec:FEMFEM}
+\begin{equation}
+F^{int}_{\bv{u}_{h}}(\Delta \bv{\sigma}^i,\Delta \bv{t}_{C},\bv\eta_h) = \sum_{i=\sl,\ms} ( (\tilde{\bv{T}}_{pl})_{n-1}(\Delta(\bv{\e}^i)_{n}), \bv{\e}(\bv{\eta}^i_h))_{\Omega^i}
+- \left\langle \bv (\tilde{\bv{T}}_{C})_{n-1}(\Delta(\bv{u}^{\ms}-\bv{u}^{\sl})_{n}), \bv{\eta}^i_h\right\rangle_{\Gamma_C}. \\
+\end{equation}
+The convergence of Newton-like  iterations introduced below depends on the properties of the functionals 
+\begin{equation}
+\mathcal{F}_{pl,n-1}(\Delta(\bv{u}^i)_{n},\bv\eta_h):=\sum_{i=\sl,\ms} ( (\tilde{\bv{T}}_{C})_{n-1}(\Delta(\bv{\e}^i)_{n})\Delta(\bv{\e}^i)_{n}, \bv{\e}(\bv{\eta}^i_h))_{\Omega^i}
+\end{equation}
+ and 
+\begin{equation}
+\mathcal{F}_{C,n-1}(\Delta(\bv{u}^i)_{n},\bv\eta_h):=- \left\langle \bv (\tilde{\bv{T}}_{C})_{n-1}(\Delta(\bv{u}^{\ms}-\bv{u}^{\sl})_{n})(\Delta(\bv{u}^{\ms}-\bv{u}^{\sl})_{n})\bv{\eta}^i_h\right\rangle_{\Gamma_C}.
+\end{equation}
+
+
+\begin{thm}\label{thm:NLI:MechanicalElPlContactFunctional:Solvability}
+Let $\alpha$ be such that $\vartheta:=\nu_0+\alpha(\nu_0 K + C^{3}_1)< 1$ for $\nu_0$ defined in \cite{BlAx97} Eqn. (3) and $K$. Denote $m=1-\vartheta$, $M=1+\vartheta$. Moreover, let $\omega \in (0,\frac{2m}{M^2})$ which gives that
+\begin{equation}\nonumber
+c:=\sqrt{1-2 m \omega +M^2 \omega^2} < 1.
+\end{equation}
+Further, let the load increment  $\Delta \bv{f}_{n}$ be sufficiently small, e.g.
+\begin{equation}\nonumber
+\|\Delta \bv{f}_{n}\|_{-E}\leq \frac{1-c}{\omega} \alpha.
+\end{equation}
+Then the iterations  $k=1,2,\ldots$
+\begin{equation}\label{eq:NLI:Iterations}
+\Delta \bv{u}^{(k)}_{n}:=\Delta \bv{u}^{(k-1)}_{n}+\omega A^{-1}_{e}(\Delta \bv{f}_{n}-\mathcal{F}_{\delta}(\Delta \bv{u}^{(k-1)}_{n})),\quad \Delta \bv{u}^{(0)}_{n}:=0.
+\end{equation}
+converge to the unique solution of the equation $\mathcal{F}_{\delta}(\Delta \bv{u}_{n})=\Delta \bv{f}_{n}$.
+\end{thm}
+
+The discrete system can be written  in a vector form 
+\begin{equation} \label{NLI:DeltaWeakFormF_nU_vector}
+\mathcal{F}_{\delta}(\Delta \mathbf{U}_{n}) = \Delta \bv{f}_{n}.
+\end{equation}
+
+Then  the Newton-like iterations for (\ref{NLI:DeltaWeakFormF_nU_vector}) read as follows.
+
+Start with an initial guess $\Delta \mathbf{U}^{(0)}_{n}$, 
+
+for $i=1,2\ldots$ iterate
+\begin{enumerate}
+ \item find Newton increment $\mathbf{d}^{(i)}$ satisfying
+\begin{equation} \label{NLI:DeltaWeakFormF_nU_vector_NewtonStepEquationForIncrement}
+\mathcal{A}_{e}\mathbf{d}^{(i)} =\bv{r}^{(i-1)}:=\Delta \bv{f}_{n}-\mathcal{F}_{\delta}(\Delta \mathbf{U}^{(i-1)}_{n})
+\end{equation}
+
+\item Update 
+\begin{equation}\label{NLI:DeltaWeakFormF_nU_vector_NewtonStepIncrementUpdate}
+\Delta \mathbf{U}^{(i)}_{n}:=\Delta \mathbf{U}^{(i-1)}_{n}+\omega\mathbf{d}^{(i)}.
+\end{equation}
+
+\end{enumerate}
+continue
+
+\begin{remark}
+The convergence of Newton-like iterations is provided by the Theorem \ref{thm:NLI:MechanicalElPlContactFunctional:Solvability}.
+\end{remark}
+
+\begin{remark}
+The inexact version of this algorithm will be obtained by assuming that  the iteration solver solves the linear system  (\ref{NLI:DeltaWeakFormF_nU_vector_NewtonStepEquationForIncrement}) with the tolerance $\eta$, i.e.
+\begin{equation} \label{NLI:DeltaWeakFormF_nU_vector_InexactNewtonStepEquationForIncrement}
+\left\|\mathcal{A}_{e}\mathbf{d}^{(i)}-\bv{r}^{(i-1)}\right\|_{-E} \leq \eta \|\bv{r}^{(i-1)}\|.
+\end{equation}
+\end{remark}
+
+% For fixed time step $n$ we have the following theorem that provides the convergence of the inexact Newton-like iterations suggested above in this section. For convenience we will omit subscript $n$.
+% \begin{thm}\label{thm:NLI:NewtonLikeIterationsConvergence}
+% Let $\alpha>0$ be such that $\bar{\zeta}=\nu_0(1-\nu_0)K\alpha< 1$ for $\nu_0$ defined in \cite{BlAx97} Eqn. (3) and  $K$ defined in (\ref{eq:NLI:EssSup:rhoContiuity}). 
+% \end{thm}
+
+
+
+
+
+\section{FEM/BEM domain decomposition for frictional contact}\label{sec:ElPlContact:DomainDecomposition}
+
+% \begin{abstract}
+% We consider two-body contact problems in elastoplasticity with and without friction modeling a stamping process in metal forming. We assume that the plastic zone in the work piece develops directly under the contact region. The natural idea is to localite the plastic behavior near the contact region and treat the rest of the body as purely elastic. Furthermore, we assume that the meshes in the elastic and plastic domain in the work piece should not match on the interface. The continuity condition for displacement and traction is used on this interface. The weak formulation of the total problem is written in the saddle point form, where the Lagrange multiplier technique is used on the elastoplastic interface and the penalty technique on the contact region between the stamp and the plastic domain. We examine the possibility to use the boundary element discretization in the plastic domain and compare it with the finite element simulation. 
+% \end{abstract}
+%  $\mathrm{ A} \mathit{A} \mathbf{A} \mathsf{A} \mathtt{A} \mathcal{A} \mathbb{A} \mathfrak{A}$
+%  $\mathrm{ R} \mathit{R} \mathbf{R} \mathsf{R} \mathtt{R} \mathcal{R}  \mathbb{C} \mathfrak{R}$
+In this section we analyse a saddle point formulation with Lagrangian multipliers for the two body contact problem with friction and elastoplastic material. We decompose the work piece into plastic and elastic parts and apply boundary elements and finite elements respectively. The contact is modeled by a penalty approach described in  Section \ref{sec:ElPlContact:DiscretizationSolutionProcedure}. We use finite elements in the linear elastic work tool. We perform an incremental loading procedure and use backward Euler time discretization for contact and forward Euler time discretization  for plasticity. At each loading step the Newton algorithm is applied to solve the nonlinear discrete system. 
+
+% computations show that the domain decomposition approach considered here is comparable to other approaches in \cite{CGMS05}.
+
+The geometry for our model problem is shown in the Fig. \ref{fig:scheme}. Let $\Omega^1$ be the domain occupied by the elastic stamp, $\Omega^2$ be the part of the work piece directly below the contact zone where plastic deformations occur and $\Omega^3$ be the elastic part of the work piece. Note that the work piece occupies $\Omega^2 \cup \Omega^3$. Denote $\Gamma^i := \partial \Omega^i, i=1,2,3$. Let $\Gamma_I:=\Omega^2 \cap \Omega^3$ be the interface boundary in the work piece.
+\begin{figure}[h!]
+\begin{minipage}[c]{15cm}
+\begin{center}
+     \includegraphics[scale=0.5]{\DomainDecomposition/geometry.eps}
+\caption{ \label{fig:scheme} The model geometry}
+\end{center}
+\end{minipage}
+\end{figure}
+
+Assume for simplicity that the boundary of the plastic domain consists of the interface boundary and the contact boundary, i.e. $  \Gamma^2 := \Gamma^2_C \cup  \Gamma^2_I $. Furthermore, let the boundary of the elastic part of the work piece consist of interface, Dirichlet (prescribed displacements) and Neumann (prescribed surface tractions) parts, i.e. $  \Gamma^3 := \Gamma^3_I \cup  \Gamma^3_D \cup  \Gamma^3_N$. Finally, let the stamp boundary be decomposed into Dirichlet, Neumann and contact parts, $ \Gamma^1 :=  \Gamma^1_D \cup  \Gamma^1_N \cup  \Gamma^1_C $. Let $\bv{n}$, $\mathbf{e}$ denote the normal and tangential vector respectively.
+
+\subsubsection{Weak formulation with BE in the plastic domain}
+
+Using boundary integral operators (Section \ref{sec:BEMBEM})  we can proceed to the BE formulation in the plastic domain. As in Section \ref{sec:BEMBEM} one gets
+\begin{equation*}
+\begin{array}{l}
+(\bv{\sigma}^2,\bv{\e}(\bv{\eta}^2))_{\Omega^2} 
+- (\given{\bv{f}}^{2}, \bv{\eta}^2)_{\Omega^2}\\[2ex]
+\qquad = \left\langle S \bv{u}^2, \bv{\eta}^2 \right\rangle_{\Gamma^2} 
++ \left\langle N (\div [\C^{2} : \bv{\e}^{2p}] - \given{\bv{f}}^{2}) , \bv{\eta}^2 \right\rangle_{\Gamma^2} \\[2ex]
+\qquad \qquad 
+- \left\langle [\C^{2} : \bv{\e}^{2p}] \cdot n, \bv{\eta}^2\right\rangle_{\Gamma^2} \\[2ex]
+\forall \bv{u}^2 \in \bv{H}^1_D(\Omega^2), \quad \forall \bv{\eta}^i \in \bv{H}^1_0(\Omega^2).
+\end{array}
+\end{equation*}
+This together with the FE approach  we have
+\begin{equation}\label{pr:LM:FEMBEM}
+\begin{array}{l}
+\sum \limits_{j=1,3} 
+   (\bv{\sigma}^j,\bv{\e}(\bv{\eta}^j))_{\Omega^l}
++ \left\langle S \bv{u}^2, \bv{\eta}^2 \right\rangle_{\Gamma^2}
+ - \left\langle \lambda, \bv{\eta}^2 - \bv{\eta}^3 \right\rangle_{\Gamma_I} 
+ - \left\langle \bv t_C, \bv{\eta}^2 - \bv{\eta}^1 \right\rangle_{\Gamma_C}  \\[2ex]
++ \left\langle N \div [\C^{2} : \bv{\e}^{2p}] , \bv{\eta}^2 \right\rangle_{\Gamma^2}
+- \left\langle [\C^{2} : \bv{\e}^{2p}] \cdot \bv{n}, \bv{\eta}^2\right\rangle_{\Gamma^2}
+= L_B(\bv{\eta}^1, \bv{\eta}^2, \bv{\eta}^3),  \\[2ex]
+\qquad \qquad \qquad \qquad  \left\langle \bv \mu, \bv{u}^2 - \bv u^3 \right\rangle_{\Gamma_I} 
+ =\,\, 0   \quad 
+ \forall (\bv{\eta}_1,\bv{\eta}_2,\bv{\eta}_3) \in \bv{\mcV}_0, \quad \forall \bv \mu \in \bv{\LMSpace},
+\end{array}
+\end{equation}
+where
+\[
+L_B(\bv{\eta}^1, \bv{\eta}^2, \bv{\eta}^3):=\,\, \sum_{j=1,3} \left\lbrace 
+ (\bv f^j, \bv{\eta}^j)_{\Omega^i} 
++ \left\langle \given{\bv{t}}^j, \bv{\eta}^j \right\rangle_{\Gamma_N^j} \right\rbrace 
++ \left\langle N \given{\bv{f}}^{2} , \bv{\eta}^2 \right\rangle_{\Gamma^2}.
+\]
+
+\chapter{Hypoelasto-viscoplasticity. Large deformations}\label{chap:HypoelastoViscoplasticity}
+\markright{\large Hypoelasto-viscoplasticity. Large deformations}
+\def \benchmarkTensileTest{/home/gein/Documents/tex/papers/paper_A.boundary.element.method.for.viscoplasticity/benchmark}
+
+\def \benchmarkMetalChipping{/home/gein/Documents/tex/SPP1180/Kolloquium.7_8.Juni}
+
+We consider a three-dimensional body $\Omega\subset\R^2$ in a fixed given rectangular cartesian coordinate system. A material particle of the body in the reference configuration is assumed to have the coordinates $\bv{X}:=(X_1,X_2,X_3)^T$ and coordinates $\bv{x}:=(x_1,x_2,x_3)^T$ in actual (current) configuration. By $\Omega_t\subset\R^2$ we will denote the volume, that body occupies at time $t$. So, $\Omega_0\equiv\Omega$. Motion of the body is given by parameterized set of mappings $\varphi(t): \Omega_0\rightarrow \Omega_t$. We assume that for all $t\in[0,T]$ exists $\bv{\varphi}^{-1}(t):\Omega_t\rightarrow \Omega_0$ and both $\bv{\varphi}(t)$ and $\bv{\varphi}^{-1}(t)$ are continuous and bijective. $\bv{\varphi}_0$ is the identical mapping. We will write $\Xi(t,\bv{X})$ for the value of mapping $\Xi(t):\Omega_0\rightarrow Y_t$ at $\bv{X}\in\Omega_0$, where $Y_t:=\Xi(t)(\Omega_0)$, this set may depend on $t$.\\
+\section{A boundary element method for hypoelasto-viscoplasticity}\label{sec:BEM_HyperElasto_VP}
+
+In this chapter we use Hart's modell of viscoplasticity and investigate a boundary element solution procedure. Our  Galerkin approach extends the collocation procedure in \cite{MuCha84,Mu82}. We describe in detail the nested loops which are necessary for our BEM implementation for details see \cite{DonigaDipl05}. 
+
+% show that numerical results for pure BEM formulation are comparable with finite element formulation.
+
+%\setcounter{section}{-1}
+
+% \include{Titelseite}
+% \pagenumbering{roman}
+% \include{Index}
+
+
+\section{Boundary element and finite element procedures for metal chipping}\label{sec:FEMBEM_HyperElasto_VP}
+% \begin{abstract}
+We present  finite element/boundary element procedure for  vicoplastic-thermomechanical problems and coupled thermoelastic formulation for contact problems. We consider a 2-body problem with a linear elastic worktool and viscoplastic workpiece. We allow  large deformations and consider an initial boundary value problem for  velocity and temperature. The viscoplastic material law under consideration is Hart's modell. The mechanical equation and the heat conduction equation are solved by staggered iteration. We discretize the mechanical contact equation by finite elements for the viscoplastic material and by boundary elements for the elastic worktool. The heat conduction equation is discretized using backward Euler in time and finite elements in space. Time stepping procedure together with Lagrangian update  is performed which takes care of the change of configuration. 
+% \end{abstract}
+
+
+\subsection{Viscoplastic thermomechanical coupling}
+We consider the following initial boundary value problem for  velocity and temperature. Let $\bv{u}^i(0,\bv{X})$ denote the initial displacement, $\bv{v}^{i}(0,\bv{X})$  the initial velocity and $\Theta^i(0,\bv{X})$ the initial temperature (i=1,2). Then we look for $\bv{v}^{\sl}\in\Hb^{1}(\Omega_t^{\sl}) $, $\bv{v}^{\ms} \in\Hb^{1/2}(\Gamma^{\ms}_t:=\Gamma^{\ms}_{tN}\cup\Gamma^{\ms}_{tC})$, $\Theta:=(\Theta^{\sl},\Theta^{\ms})\in H^{1}(\Omega_t:=(\Omega_t^{\sl},\Omega_t^{\ms}))$, $0\leq t \leq T $~
+
+\begin{equation}\label{WeakMech}
+\begin{array}{c}
+\begin{array}{l}
+\displaystyle\hspace{-2.0cm}\Int_{\Omega_t^{\sl}}(\nabla \bv{v}^{\sl}):\C:(\nabla \bv{\eta}^{\sl}) - \Int_{\Omega_t^{\sl}}(\nabla \bv{v}^{\sl}): \,\stackrel{(*)}{\G}\!{}^T\!(\bv{\sigma^{\sl}}):(\nabla \bv{\eta}^{\sl})+\left\langle S \bv{v}^{\ms},\bv{\eta}^{\ms}\right\rangle_{\Gamma^{\ms}_t} 
+\end{array}
+  \\ [2ex]
+\begin{array}{r}
+\displaystyle\hspace{0.5cm}+\left\langle\dot{\bv{t}}_{C} (\bv{v}^{\sl},\bv{v}^{\ms}), \bv{\eta}^{\sl \ms}\right\rangle_{\Gamma^{\sl}_{tC}}
+-\Int_{\Omega_t^{\sl}} \bv{d}^n : \C : \nabla \bv{\eta}^{\sl} =0,
+\end{array}
+\end{array}
+\end{equation}
+
+\begin{equation}\label{WeakHeat}
+\begin{array}{c}
+\begin{array}{l}
+ \displaystyle\hspace{-0.5cm}\Int_{\Omega_t}\left[\frac{\partial \Theta}{\partial t} \vartheta  +\varkappa  \nabla \Theta\nabla \vartheta\right]    -\gamma_{12} \Int_{\Gamma_{tC}^{\sl}}\bv{t}_{C}\cdot \bv{n}^{\ms} \Theta^{\ms \sl}\vartheta^{\ms \sl} - \Int_{\Gamma^{\sl}_{tC}}\mu_f~ \bv{t}_{C}\cdot \bv{n}^{\ms} \left| \bv{v}^{\ms \sl}_{\ct}\right|\left(\gamma_{1}\vartheta^{\sl}+\gamma_{2}\vartheta^{\ms}\right)=0
+\end{array}
+\end{array}
+\end{equation}
+with $\bv{\eta}^{\sl}$  in $\Omega_t^{\sl}$,  $\bv{\eta}^{\ms}$ on $\Gamma_t^{\ms}$, $\vartheta$ in  $\Omega_t$, $\varkappa:=\frac{k}{\rho c}$, $\rho$ - density, $c$ - heat  capacity, $k$ - heat conductivity.   In the contact term on $\Gamma^{\sl}_{tC}$ $\dot{\bv{t}_{C}}=\dfrac{\partial \bv{t}_{C}}{\partial \bv{u}} \bv{v}$ denotes the rate of the boundary traction. $\bv{d}^n$  describes the viscoplasticity, $\mu_f$ is the friction coefficient and the boundary integral operator $S$ is the Steklov-Poincare operator of linear elasticity. With $\Theta^{\ms \sl}$ and  $\bv{\eta}^{\ms \sl}$ we denote the jump of the temperature and displacement between the two bodies respectively. $\bv{n}^{\ms}$ is the exterior for $\Omega^{\ms}_t$.
+
+Next we discretize the system  (\ref{WeakMech})-(\ref{WeakHeat}) by using finite elements and boundary elements in space and finite differences in time. We discretize the velocity in the work peace with finite elements and in the work tool with boundary elements whereas the temperature is in both bodies discretized by finite elements. At each time step $k=1,\ldots,N$ we look for a continuous piecewise linear function  $\bv{v}^{\sl}_{kh}$ in $\Omega^{\sl}_{t_{k-1}}$ and a  continuous piecewise linear function $\bv{v}^{\ms}_{kh}$ on $\Gamma^{\ms}_{t_{k-1}}$ and continuous piecewise linear function $\Theta_{hk}$ in $\Omega_{t_{k-1}}$ satisfying
+
+\begin{equation}\label{DiscrWeakMech}
+\begin{array}{c}
+\begin{array}{l}
+\displaystyle\Int_{\Omega_{t_{k-1}}^{\sl}}(\nabla \bv{v}_{kh}^{\sl}):\C:(\nabla \bv{\eta}_h^{\sl}) - \Int_{\Omega_{t_{k-1}}^{\sl}}(\nabla \bv{v}_{kh}^{\sl}): \,\stackrel{(*)}{G}\!{}^T\!(\bv{\sigma}_{{k-1}h}):(\nabla \bv{\eta}_h^{\sl})+\left\langle S \bv{v}_{kh}^{\ms},\bv{\eta}_h^{\ms}\right\rangle_{\Gamma^{\ms}_{t_{k-1}}} 
+\end{array}
+  \\ [2ex]
+\begin{array}{r}
+\displaystyle+\left\langle\dot{\bv{t}}_{C_{kh}} (\bv{v}_{kh}^{\sl},\bv{v}_{kh}^{\ms}), \bv{\eta}_h^{\sl \ms}\right\rangle_{\Gamma^{\sl}_{t_{k-1}C}}
+=\Int_{\Omega_{t_{k-1}}^{\sl}}\bv{d}_{k-1h}^{(n)}  : \C : \nabla \bv{\eta}_h^{\sl},
+\end{array}
+\end{array}
+\end{equation}
+
+\begin{equation}\label{DiscrWeakHeat}
+\begin{array}{c}
+\begin{array}{l}
+\displaystyle\Int_{\Omega_{t_{k-1}}}\left[\frac{\Theta_{kh}-\Theta_{k-1,h}}{\Delta t} \vartheta_h  +\varkappa \nabla \Theta_{kh} \nabla \vartheta_h \right] -\gamma_{12}\Int_{\Gamma_{t_{k-1}C}^{\sl}}\bv{t}_{C_{kh}}\cdot\bv{n}^{\ms}[\Theta_{kh}][\vartheta_{h}],
+\end{array}
+ \\[2ex]
+\begin{array}{r}
+\displaystyle= \Int_{\Gamma^{\sl}_{t_{k-1}C}}\mu_f \bv{t}_{C_{kh}}\cdot\bv{n}^{\ms} \left| \bv{v}^{\ms \sl}_{kh_{\ct}}\right|\left(\gamma_1\vartheta_h^{\sl}+\gamma_2\vartheta_h^{\ms}\right)
+\end{array}\mbox{\hspace*{1cm}(backward Euler)}
+\end{array}
+\end{equation}
+with test functions   $ \bv{\eta}_h^{\sl}$ in $\Omega_{t_{k-1}}^{\sl}$\quad $ \bv{\eta}_h^{\ms}$ on $\Gamma^{\ms}_{t_{k-1}}$ and  $\vartheta_h$ in $\Omega_{t_{k-1}}$.
+% \hspace*{1cm}
+% \begin{minipage}[b]{15cm}
+We solve the above discretization (\ref{DiscrWeakMech}), (\ref{DiscrWeakHeat}) with a staggered iteration as follows (see also \cite{MuChaDBE3}):
+
+Start with $\bv{u}^i(0,\bv{X})$, $\bv{v}^{i}(0,\bv{X})$, $\Theta(0,\bv{X})$ and initial configuration $\Omega_0^i$, for   $k=1,\ldots,N$ do~:
+
+\begin{minipage}[b]{17cm}
+\begin{enumerate}
+\item 
+\begin{minipage}[l]{10cm}
+%  \vspace*{-0.5cm}
+\begin{eqnarray}\nonumber
+\mbox{use }(\ref{DiscrWeakMech})  & \mbox{ to compute }& \bv{v}^{\sl}_{kh} \mbox{ in }\Omega^{\sl}_{t_{k-1}},  \bv{v}^{\ms}_{kh} \mbox{ on }\Gamma^{\ms}_{t_{k-1}},
+\\
+\mbox{use }(\ref{DiscrWeakHeat})  &\mbox{ to compute }&\Theta_{kh}\mbox{ in } \Omega^{\sl}_{t_{k-1}}\cup\Omega^{\ms}_{t_{k-1}}.\nonumber
+\end{eqnarray}
+\end{minipage}
+\item apply the Lagrangian update, $\bv{u}^i_{kh}:=\bv{v}^{i}_{kh}\Delta t$.
+\begin{equation}\nonumber
+\begin{array}{ll}
+\Omega^i_{t_{k-1}}\mbox{ map }  \Omega^i_{t_{k}} &\mbox{ by setting }  \bv{x}_k^i=\bv{x}^i_{k-1}+\bv{x}^i_{kh}, \\
+\Gamma^{\ms}_{t_{k-1}}\mbox{ map into }  \Gamma^{\ms}_{t_{k}} &\mbox{  with } \bv{x}_k^{\ms}=\bv{x}^{\ms}_{k-1}+\bv{u}^{\ms}_{kh}. \\
+\end{array}
+\end{equation}
+\item {} update  $\bv{\sigma}_{k-1,h}$ using Hart's model constitutive equations: \\  \begin{equation}\nonumber
+\bv{\sigma}^{\sl}_{k-1,h}\stackrel{\bv{v}^{\sl}_{kh},~\Theta_{kh}}{\rotatebox{0}{|}\!\!\!\!\longrightarrow}\bv{\sigma}^{\sl}_{kh}.
+\end{equation}
+
+\item return to 1.
+\end{enumerate}
+\end{minipage}
+
+\begin{figure}
+\begin{center}
+\begin{minipage}[c]{8.5cm}
+\resizebox{8.5cm}{!}{\includegraphics*{/home/gein/Documents/tex/SPP1180/Kolloquium.7_8.Juni/geometry.k.scale.[thesis].eps}}
+\caption{Model problem}\label{fig:MetalChipingModelProblem}
+\end{minipage}
+\end{center}
+\end{figure}
+% \begin{minipage}[b]{3.5cm}
+% \resizebox{3.5cm}{!}{\includegraphics*{/home/gein/Documents/tex/SPP1180/Kolloquium.7_8.Juni/versch.deformedmesh.16.8.1.eps}}
+% \end{minipage}
+
+% \newpage
+% 
+% \begin{minipage}[c]{3.7cm}
+% $||\mbox{dev} \sigma||_{L_2}$, 20 Zeitschritten
+%  
+% \includegraphics[scale=0.25]{bilde/stressdev.16.8.20.eps}
+% \end{minipage}
+% \begin{minipage}[c]{3.7cm}
+% $||\mbox{dev} \sigma||_{L_2}$, 40 Zeitschritten
+%  
+% \includegraphics[scale=0.25]{bilde/stressdev.16.8.40.eps}
+% \end{minipage}
+% \begin{minipage}[c]{3.7cm}
+% $||\mbox{dev} \sigma||_{L_2}$, 60 Zeitschritten
+%  
+% \includegraphics[scale=0.25]{bilde/stressdev.16.8.60.eps}
+% \end{minipage}
+% \begin{minipage}[c]{3.7cm}
+% $||\mbox{dev} \sigma||_{L_2}$, 80 Zeitschritten
+%  
+% \includegraphics[scale=0.25]{bilde/stressdev.16.8.80.eps}
+% \end{minipage}
+% \begin{minipage}[c]{3.7cm}
+% $||\mbox{dev} \sigma||_{L_2}$, 100 Zeitschritten
+%  
+% \includegraphics[scale=0.25]{bilde/stressdev.16.8.100.eps}
+% \end{minipage}
+% \begin{minipage}[c]{3.7cm}
+% $||\mbox{dev} \sigma||_{L_2}$, 120 Zeitschritten
+%  
+% \includegraphics[scale=0.25]{bilde/stressdev.16.8.120.eps}
+% \end{minipage}
+% \begin{minipage}[c]{3.7cm}
+% $||\mbox{dev} \sigma||_{L_2}$, 140 Zeitschritten
+%  
+% \includegraphics[scale=0.25]{bilde/stressdev.16.8.140.eps}
+% \end{minipage}
+% \begin{minipage}[c]{3.7cm}
+% $||\mbox{dev} \sigma||_{L_2}$, 160 Zeitschritten
+%  
+% \includegraphics[scale=0.25]{bilde/stressdev.16.8.160.eps}
+% \end{minipage}
+% \begin{minipage}[c]{3.7cm}
+% $||\mbox{dev} \sigma||_{L_2}$, 180 Zeitschritten
+%  
+% \includegraphics[scale=0.25]{bilde/stressdev.16.8.180.eps}
+% \end{minipage}
+% 
+% 
+% \newpage
+In order to solve the contact problem  (normal/tangential parts) we apply a penalty method with penalty  parameters  $\epsilon_{\ct}$, $\epsilon_{\cn}$ and a gap function Gap - $g_k$.
+
+\begin{equation}\label{DotP}
+\left\langle\dot{\bv{t}}_{kh_{C}} (\bv{v}_{kh}^{\sl},\bv{v}_{kh}^{\ms}), [\bv{\eta}_h]\right\rangle_{\Gamma^{\sl}_{C}}=\frac{1}{\epsilon_{\cn}}\Int_{\Gamma^{\sl}_{C}} [\bv{v}_{kh}]^{(+)}_N[\bv{\eta}_h]_N+
+\left\{
+\begin{array}{lc}
+\displaystyle\frac{1}{\epsilon_{\ct}}\Int_{\Gamma^{\sl}_{C}} [\bv{v}_{kh}]_{\tau} [\bv{\eta}_h]_{\ct}& \mbox{stick}\\[7ex]
+\displaystyle\frac{\mu}{\epsilon_{\cn}}\Int_{\Gamma^{\sl}_{C}} [\bv{v}_{kh}]_{N} [\bv{\eta}_h]_{\ct}& \mbox{slip}
+\end{array}
+\right.
+\end{equation}
+
+\begin{equation}\nonumber
+[\bv{v}_{kh}]^{(+)}_{\cn}:=
+\left\{
+\begin{array}{cc}
+[\bv{v}_{kh}]_{\cn}, & \mbox{ if }0>g_{k-1}, \\
+0, &\mbox{ if } 0\leq g_{k-1}. \\
+\end{array}
+\right.
+\end{equation}
+Hence, the discrete solution of problem  ( \ref{DiscrWeakMech}, \ref{DiscrWeakHeat}) depends on the discretization parameters $h$, $\Delta t$, $\epsilon_{\cn}$, $\epsilon_{\ct}$. The optimal choice for the parameters is an open question, an indication for it can only be obtained by a series of numerical simulation. These simulations are obtained by inserting the expression  (\ref{DotP}) into the discretization  (\ref{DiscrWeakMech}) yields a linear system for $\bv{v}^{i}_{kh}$. Note that the term $\stackrel{(*)}{\G}\!\!{}^T\!(\bv{\sigma}_{{k-1}h})$ is explicitly computed with Hart's modell at the former time step. 
+
+Next, we introduce Hart's modell with viscoplastic interior variables \cite{DonigaDipl05}. 
+
+
+
+\begin{minipage}[c]{13cm}
+\begin{itemize}
+\item It uses the strain rate $\bv{d}^{(n)}_{k-1}$ and the velocity gradient $\bv{d}^{(e)}_{k}:=\nabla^{sym} \bv{v}_{k}-\bv{d}^{(n)}_{k-1}$
+\item Hart's modell describes hypoelastic material law $\displaystyle\jaum{\bv{\sigma}}_{k}:=\C:\bv{d}^{(e)}_k=\C:(\nabla^{sym} \bv{v}_{k}-\bv{d}^{(n)}_{k-1})\Longrightarrow \bv{\sigma}_{k}\Longrightarrow \bv{\sigma}'_{k}$
+
+\item 
+\begin{equation*}
+\left.
+\begin{array}{rcl}
+\displaystyle\jaum{\bv{\e}}{}^{a}_{k}
+&:=&\bv{d}^{(n)}_{k-1}-\sqrt{\frac{3}{2}}\lambda^{(\star)}_{k-1}\left[\ln\left( \frac{\sigma^{\star}_{k-1}}{\sqrt{\frac{2}{3}}\mathcal{M}\|\bv{\e}^{a}_{k-1}\|}\right)  \right]^{-1/\lambda}\frac{\bv{\e}^{a}_{k-1}}{\|\bv{\e}^{a}_{k-1}\|}
+\\
+\displaystyle\dot{\sigma}^{\star}_{k}&:=&\sigma^{\star}_{k-1}\lambda^{(\star)}_{k-1}\left[\ln\left( \frac{\sigma^{\star}_{k-1}}{\sqrt{\frac{2}{3}}\mathcal{M}\vert\vert\bv{\e}^{a}_{k-1}\vert\vert}\right)  \right]^{-1/\lambda}\left( \frac{\beta}{\sigma^{\star}_{k-1}}\right) ^{\delta}\left(\frac{\sqrt{\frac{2}{3}}\mathcal{M}\|\bv{\e}^{a}_{k-1}\|}{\sigma^{\star}_{k-1}} \right) ^{\beta/\sigma^{\star}_{k-1}}
+\end{array}
+\right\}
+\Rightarrow \bv{\e}^{a}_{k}, \sigma^{\star}_{k}
+\end{equation*} 
+
+\item
+\begin{equation*}
+\hspace*{-25mm}\bv{d}^{(n)}_{k}
+:=\frac{\lambda_{0}}{(\sigma_{0})^{M}}\left( \sqrt{\frac{3}{2}}\right)^{M+1} \|\bv{\sigma}'_{k}-\frac{2}{3}\mathcal{M}\cdot\bv{\e}^{a}_{k}\|^{M-1}\left( \bv{\sigma}'_{k}-\frac{2}{3}\mathcal{M}\bv{\e}^{a}_{k}\right),\nonumber
+\end{equation*} 
+
+\end{itemize}
+where
+
+\begin{eqnarray}\lambda^{(\star)}_{k-1}&:=&\lambda_{sT}^{(\star)}\cdot\left( \frac{\sigma^{\star}_{k-1}}{\sigma_{s}^{\star}}\right)^{m}\exp\left[ -\frac{Q}{R}\left( \frac{1}{\Theta_{k-1}}-\frac{1}{\Theta_{B}}\right) \right].\nonumber
+\end{eqnarray} 
+\end{minipage}
+
+On the other hand the linear elastic work tool is modelled wit BEM using the  boundary integral operators as in \ref{sec:BEMBEM}.
+
+Substituting linearized version of  (\ref{DotP}) in (\ref{DiscrWeakMech}) we obtain linear system for $\bv{v}^{i}_{kh}$.
+
+
+The applicability of our approach is demonstrated in the following by several benchmark simulations.
+
+
+\newpage
+\begin{equation}
+S:=\left\{\bv{\tau}\middle|~\bv{\tau}\in \R^{3\times 3}_{sym}\right\},\quad \mbox{ where } \R^{3\times 3}_{sym}:=\left\lbrace \bv{x}\in \R^{3\times 3}\middle|~ \forall i,j=1,2,3~x_{ij}=x_{ji}\right\rbrace,
+\end{equation}
+\begin{equation}
+\bv{S}(\Omega):=\left\{\bv{\tau}\middle|~\bv{\tau}:\Omega\rightarrow S.~\forall i,j\in \overline{1,3}~ \tau_{ij}\in L^{2}(\Omega) \right\},
+\end{equation}
+the space of plastic strains
+\begin{equation}
+Q_0:=\left\{\bv{\e}\middle|~\bv{\e}\in S.~ \tr \bv{\e} = 0\right\},\quad \mbox{ where } \tr \bv{\e} :=\e_{ii},
+\end{equation}
+\begin{equation}
+\bv{Q}_0(\Omega):=\left\{\bv{\e}\middle|~\bv{\e}:\Omega\rightarrow S.~\forall i,j\in \overline{1,3}~ \e_{ij}\in L^{2}(\Omega). ~ \tr \bv{\e} = 0~\text{ a.e. in }~\Omega \right\},
+\end{equation}
+the spaces of internal variables
+\begin{eqnarray}
+\bv{M}^{i}&:=&\left\{\bv{\mu}\middle|~\bv{\mu}\in \R^{m_i}\right\} \\
+\bv{M}^{i}(\Omega)&:=&\left\{\bv{\mu}\middle|~\bv{\mu}:\Omega\rightarrow \R^{m_i}. \forall j \in \overline{1,m_i} ~ \mu_j\in L^{2}(\Omega) \right\},
+\end{eqnarray}
+the space of admissible generalized stresses $(\bv{\tau},\bv{\mu})$
+\begin{eqnarray}
+\StressesYieldRegion^{i}&:=&\left\lbrace (\bv{\sigma},\bv{\chi})\in S\times M^{i} \middle| \yieldf_{pl}^{i}(\bv{\sigma},\bv{\chi})\leq 0 \right\rbrace, \\
+\bv{\StressesYieldRegion}^{i}(\Omega^{i})&:=&\left\lbrace (\bv{\sigma},\bv{\chi})\in \bv{S}(\Omega^i)\times \bv{M}^{i}(\Omega^i)\middle|\yieldf_{pl}^{i}(\bv{\sigma},\bv{\chi})\leq 0 ~\text{ a.e. in }~\Omega^i\right\rbrace,
+\end{eqnarray}
+the space of generalized strains $(\bv{\e}^{p},\bv{\xi})$
+\begin{eqnarray}
+\GeneralizedStrainsSpace^{i}&:=&\left\lbrace (\bv{\e}^{p},\bv{\xi})\in Q_0\times M^{i} \right\rbrace, \\
+\bv{\GeneralizedStrainsSpace}^{i}(\Omega^{i})&:=&\left\lbrace (\bv{\e}^{p},\bv{\xi})\in \bv{Q}_0(\Omega^i)\times \bv{M}^{i}(\Omega^i)\right\rbrace.
+\end{eqnarray}
+
+\newpage
+\begin{align*}
+\bar{a}:\bv{S}(\Omega^i)\times \bv{S}(\Omega^i)\rightarrow \R,\quad &  \bar{a}(\bv{\sigma}^i, \bv{\tau}^i):= \int_{\Omega^i} \bv{\sigma}^i : (\C^{i})^{-1}:\bv{\tau}^i\, d\Omega,\\
+b:\bv{V}_0(\Omega^i)\times \bv{S}(\Omega^i)\rightarrow \R,\quad &  b(\bv{v}^i, \bv{\tau}^i):= \int_{\Omega^i} \bv{\e}(\bv{v}^i) : \bv{\tau}^i\, d\Omega,\\
+c:\bv{M}(\Omega^i)\times \bv{M}(\Omega^i)\rightarrow \R,\quad &  c(\bv{\chi}^i, \bv{\mu}^i):= \int_{\Omega^i} \bv{\chi}^i\cdot(\mathbb{H}^i)^{-1}  \bv{\mu}^i\, d\Omega,\\
+(\cdot,\cdot)_{\Omega^i}:[H^{-1}(\Omega^i)]^2\times [H^1(\Omega^i)]^2 \rightarrow \R,\quad & ( \bv{f}^i, \bv{\eta}^i)_{\Omega^i} := \int_{\Omega} \bv{f}^i \cdot \bv{\eta}^i \, d\Omega,\\
+\left\langle \cdot,\cdot\right\rangle_{\Gamma^i}:[H^{-1/2}(\Gamma^i)]^2\times [H^{1/2}(\Gamma^i)]^2 \rightarrow \R,\quad &\left\langle \bv{t}^i, \bv{\eta}^i \right\rangle_{\Gamma^i} := \int_{\Gamma^i} \bv{t}^i \cdot \bv{\eta}^i \, d\Gamma, \\
+l(t):H^{1}(\Omega^i) \rightarrow \R,\quad &  \left\langle l(t),\bv{\eta}^{i}\right\rangle=(\given{\bv{f}}^i(t), \bv{\eta}^i)_{\Omega^i}
++ \left\langle \given{\bv{t}}^i(t), \bv{\eta}^i \right\rangle_{\Gamma_N^i}.
+\end{align*}
+
+\newpage
+\begin{equation}\nonumber
+\begin{array}{rclcl}
+  V\bv \varphi(x)&:=&\displaystyle\int_\Gamma \bv \varphi(y)\LameFundamentalSolution(x,y)\,d\Gamma_y       &-&\mbox{ single layer potential},\\[3ex]
+  K\bv u(x)&:=&\displaystyle\int_\Gamma \bv u(y) (\cT_y \LameFundamentalSolution(x,y))^T\,d\Gamma_y        &-&\mbox{ double layer potential}\\[3ex]
+  K'\bv \varphi(x)&:=&\displaystyle\cT_x\int_\Gamma\bv \varphi(x)\LameFundamentalSolution(x,y)\,d\Gamma_y  &-&\mbox{ adjoint double layer potential},\\[3ex]
+  W\bv u(x)&:=&\displaystyle-\cT_x\int_\Gamma \bv u(y) \cT_y \LameFundamentalSolution(x,y)\,d\Gamma_y      &-&\mbox{ hypersingular integral operator},\\[3ex]
+  N_0 \bv f(x)&:=&\displaystyle\int_\Omega \bv f(y) \LameFundamentalSolution(x,y)\,d\Gamma_y              &-&\mbox{ first Newton potential},\\[3ex]
+  N_1 \bv f(x)&:=&\displaystyle \cT_x \int_\Gamma \bv f(y) \LameFundamentalSolution(x,y)\,d\Gamma_y        &-&\mbox{ second Newton potential},
+\end{array}
+\end{equation}
+where the traction operator $\cT$ is given by
+\begin{equation*}
+\cT_y  \LameFundamentalSolution(x,y) = \sigma_y( \LameFundamentalSolution(x,y))|_{\Gamma} \cdot \bv n_{\Gamma}.
+\end{equation*}
+Here $\sigma_y(\cdot)$ means that $y$ is treated as an independed variable.
+The fundamental solution $G(x,y)$ of the Lam\'e operator is
+\begin{equation}\label{eq:LameFundamentalSolution}
+\LameFundamentalSolution(x,y)=\frac{\lambda+3\mu}{4\pi\mu(\lambda+2\mu)}
+\left\{\log \frac{1}{|x-y|}I+\frac{\lambda+\mu}{\lambda+3\mu}
+  \frac{(x-y)(x-y)^T}{|x-y|^2}\right\}
+\end{equation}
+It is well-known \cite{Cos88} that $V,\,K,\,K',\,W$ satisfy the following mapping properties
+\begin{eqnarray*}
+\begin{array}{rclrl}
+V&:& \Hb^{-1/2}(\Gamma)&\rightarrow& \Hb^{1/2}(\Gamma),\\[1ex]
+K&:&\Hb^{1/2}(\Gamma)&\rightarrow& \Hb^{1/2}(\Gamma),\\[1ex]
+K'&:&\Hb^{-1/2}(\Gamma)&\rightarrow& \Hb^{-1/2}(\Gamma),\\[1ex]
+W&:&\Hb^{1/2}(\Gamma)&\rightarrow& \Hb^{-1/2}(\Gamma)
+\end{array}
+\end{eqnarray*}
+all of them  are continuous, $V$ is positive definite on $\Hb^{-1/2}(\Gamma)$ and $W$ is positive semidefinite on $\Hb^{1/2}(\Gamma)$. Where $\Hb^{s}(\Gamma):=[H^{s}(\Gamma)]^2$. Note that of course our approach can be extended to 3D problems we only have to take the 3D free space Green's function for the Lame operator instead of its 2D version \ref{eq:LameFundamentalSolution}. The positive semidefinite Poincar\'e-Steklov \cite{CarSt95} operator is defined by
+\begin{equation}\label{eq:PoincareSteklovDef}
+  S:=W+(K'+1/2)V^{-1}(K+1/2)\,:\,
+  \Hb^{1/2}(\Gamma) \rightarrow \Hb^{-1/2}(\Gamma)
+\end{equation}
+and is a so-called Dirichlet-to-Neumann mapping. The volume potential $N$ can be defined in two ways \cite{EcStbWn99}:
+\begin{equation}\label{eq:NewtonPotentialDef}
+N := V^{-1} N_0 \equiv (K'+1/2) V^{-1} N_0 - N_1.
+\end{equation}
+\newpage
+\addcontentsline{toc}{chapter}{Bibliography}
+\input{Literature}
+
+
+\end{document}

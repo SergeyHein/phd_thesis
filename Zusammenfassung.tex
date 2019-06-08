@@ -1,0 +1,33 @@
+\selectlanguage{german}
+
+\vspace*{-25.0mm}
+
+% \begin{center}
+% \Large{\bf\sf  FEM-BEM procedures for elastoplastic thermo-viscoplastic contact problems}                              \end{center}
+% \begin{center}
+%  Sergey Geyn
+% \end{center}
+
+
+\begin{center}
+\sf \large
+\textbf{Zusammenfassung}
+\end{center}
+\vspace*{-3.0mm}
+Das Hauptziel dieser Dissertation ist die Erweiterung und  Verbesserung der vorhandenen Methoden für die Beschreibung und das Lösen thermomechanischer Probleme, welche den  Kontakt der Körper, das Plastizitätsverhalten sowie das hyperelastischviskoplastische Verhalten  einschließen. Anwendungsgebiete dieser Probleme findet man bei  der Metallbearbeitung, zum Beispiel bei der Umformung  und bei Zerspanprozessen. Die unterschiedlichen Diskretisierungsverfahren, d.h. Finite-Elemente-Methode (FEM) und Rand-Elemente-Methode (BEM) bzw. deren Kopplung, angewendet  auf die oben genannten Modellprobleme, werden untersucht.
+
+Im Kapitel 1 wird das quasistatische Kontaktproblem von zwei elastoplastischen Körpern  mit Coulombscher Reibung mit FE/FE-, BE/BE- und FE/BE- Kopplungs-Methoden diskretisiert. Es wird das inkrementelle Lastverfahren mit Newtonschen Iterationen in jedem Zeitschritt verwendet. Zudem wird die Linearisierung des Kontakt- und Plastizitätsanteils angegeben und das Lösungsverfahren beschrieben. Eine Gebietszerlegungsmethode wird untersucht, wobei die Transmissionsbedingungen zwischen dem elastischen und dem plastischen Gebiet des Werkzeuges über   Lagrange-Multiplikatoren eingearbeitet sind. Zudem ist  die Verteilung der Temperatur mit dem two-field Verfahren modelliert. Die oben genannten Verfahren werden verwendet, um die Benchmark-Probleme bei Zerspanprozessen zu simulieren.
+
+Im Kapitel 2 wird das quasistatische Einkörper-Problem mit dem hyperelastischviskoplastischen Stoffgesetz,  welches mit  dem Hartschen Modell beschrieben ist,  mit FE- sowie mit BE- Methoden im Raum diskretisiert. In der Zeit wird die   auf dem aktualisierten Lagrange-Verfahren basierende explizite  finite Differenzen Methode  angewendet. In jedem Zeitschritt wird eine Fixpunktiteration durchgeführt. Ein  Verfahren zur expliziten Integration der konstitutiven  Materialgleichungen sowie die Beschreibung der Lösungsverfahren werden gegeben. 
+
+Das thermomechanische  hyperelastischviskoplastische Zweikörper Kontaktproblem mit Coulombscher Reibung wird mit FE/BE im Raum und mit finiten Differenzen bezüglich der Zeit diskretisiert. Die Referenzkonfiguration wird nach  jedem Zeitschritt gemäß des aktualisierten Lagrange'sche Verfahrens erneuert. 
+
+Die numerischen  Algorithmen sind als interne Bibliothek innerhalb des Softwarepacketes {\tt maiprogs} in Fortran 95 realisiert.
+
+
+Die numerischen Berechnungen für die verschiedenen Diskretisierungsverfahren liefern vergleichbare Ergebnisse.
+
+
+\textbf{Schlagworte:} FE/BE-Kopplung,  Finite Elemente, Randelemente, Reibungskontakt, Penalty, Hartmodell, updated Lagrange, gro\ss{}e Verformungen
+\vspace*{-2.6mm}
+\selectlanguage{english} 

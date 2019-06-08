@@ -1,0 +1,1183 @@
+\def \benchmarkTensileTest{/home/gein/Documents/tex/papers/paper_A.boundary.element.method.for.viscoplasticity/benchmark}
+
+\def \benchmarkMetalChipping{/home/gein/Documents/tex/SPP1180/Kolloquium.7_8.Juni}
+In this Chapter we extend the technique of FEM-BEM coupling that was introduced in Chapter \ref{chap:SmallDeformations} onto  large deformations under hypoelasto-viscoplastic material law described by Hart's  constitutive equations. We start with an introduction to continuum mechanics of large deformations subjected to  Hart's model, see Section \ref{sec:HartConstitutiveLaw}. In Section \ref{sec:BEM_HyperElasto_VP} we present numerical procedures based on the  boundary element Galerkin method for hypoelasto-viscoplasticity. In Section \ref{sec:FEMBEM_HyperElasto_VP} we present a FEM-BEM coupling procedure for the thermo-mechanical two-body contact problem. In subsections \ref{sec:BEM:Benchmarks}, \ref{sec:Benchmarks_HyperElasto_VP} we present benchmarks for procedures investigated in Sections \ref{sec:BEM_HyperElasto_VP}, \ref{sec:FEMBEM_HyperElasto_VP} respectively.
+\section{The equilibrium equation}\label{sec:LargeViscoplacticity:EquilibriumEquation}
+We consider a three-dimensional body $\Omega\subset\R^2$ in a fixed given rectangular cartesian coordinate system. A material particle of the body in the reference configuration is assumed to have the coordinates $\bv{X}:=(X_1,X_2,X_3)^T$ and coordinates $\bv{x}:=(x_1,x_2,x_3)^T$ in actual (current) configuration. By $\Omega_t\subset\R^2$ we will denote the volume, that body occupies at time $t$. So, $\Omega_0\equiv\Omega$. Motion of the body is given by parameterized set of mappings $\varphi(t): \Omega_0\rightarrow \Omega_t$. We assume that for all $t\in[0,T]$ exists $\bv{\varphi}^{-1}(t):\Omega_t\rightarrow \Omega_0$ and both $\bv{\varphi}(t)$ and $\bv{\varphi}^{-1}(t)$ are continuous and bijective. $\bv{\varphi}_0$ is the identical mapping. We will write $\Xi(t,\bv{X})$ for the value of mapping $\Xi(t):\Omega_0\rightarrow Y_t$ at $\bv{X}\in\Omega_0$, where $Y_t:=\Xi(t)(\Omega_0)$, this set may depend on $t$.\\
+The displacement vector $\bv{u}(t):\Omega_0\rightarrow \R^2$ is defined as follows		
+\begin{equation}
+\bv{u}(t,\bv{X}):=\bv{\varphi}(t,\bv{X})-\bv{X}.
+\end{equation}
+It is clear that $\forall t\in[0,T]$ $\bv{u}(t)\circ\bv{\varphi}^{-1}(t)$ is a mapping $\Omega_t\rightarrow \R^2$:
+\begin{equation}
+\left(\bv{u}(t)\circ\bv{\varphi}^{-1}(t)\right)(\bv{x})=\bv{u}(t,\bv{\varphi}^{-1}(t,\bv{x}))=\bv{x}-\bv{\varphi}^{-1}(t,\bv{x})
+\end{equation}
+We will write $\Xi(t,\bv{x})$ for  $\left(\Xi(t)\circ\bv{\varphi}^{-1}(t)\right)(\bv{x})$.
+\begin{definition}
+\begin{eqnarray}
+\forall~ \Xi(t),~~ \Xi(t) &:&\Omega_0\rightarrow Y_t \mbox{ we use following notation}: \nonumber \\
+\Xi(t,\bv{X})&:=&\Xi(t)(\bv{X}),\quad \forall~ \bv{X}\in \Omega_0, \nonumber \\
+\Xi(t,\bv{x})&:=&\left(\Xi(t)\circ\bv{\varphi}^{-1}(t)\right)(\bv{x}),\quad \forall~ \bv{x}\in \Omega_t. \nonumber 
+\end{eqnarray}
+Derivatives:
+\begin{eqnarray}
+\refgrad \Xi:= \frac{\partial \Xi}{\partial \bv{X}}&:=&\frac{\partial \Xi(t)(\bv{X})}{\partial \bv{X}},\quad \forall~ \bv{X}\in \Omega_0. \nonumber \\
+\actgrad \Xi:= \actgrad \frac{\partial \Xi}{\partial \bv{x}}&:=&\frac{\partial \left(\Xi(t)\circ\bv{\varphi}^{-1}(t)\right)(\bv{x})}{\partial \bv{x}},\quad \forall~ \bv{x}\in \Omega_t. \nonumber 
+\end{eqnarray}
+\begin{equation}
+\bv{F}:=\refgrad \bv{\varphi}.
+\end{equation}
+\end{definition}
+The components of the velocity vector $\bv{v}:=(v_1,v_2,v_3)^T$ are then defined as
+
+\begin{equation}
+v_i:=\frac{\partial u_i(t,\bv{X})}{\partial t}\mbox{ or  }v_i=\frac{\mathrm{d} u_i(t,\bv{x})}{\mathrm{d} t}=\frac{\partial u_i(t,\bv{x})}{ \partial t}+\frac{\partial u_i(t,\bv{x})}{ \partial \bv{x}} \frac{\partial \bv{\varphi}(t,\bv{X})}{ \partial t}.
+\end{equation}
+We define the symmetric part $\bv{d}(t):\Omega_t\rightarrow \R^{3\times 3}_{sym}$ (rate-of-deformation) of the velocity gradient (rate of deformation) $\frac{\partial \bv{v}(t,\bv{x})}{\partial \bv{x}}$ by
+
+\begin{equation}\label{eq:RateOfDeformation}
+d_{ij}:=\frac{1}{2}\left( \frac{\partial v_i(t,\bv{x})}{\partial x_j}+\frac{\partial v_j(t,\bv{x})}{\partial x_i}\right)
+\end{equation}
+and the anti-symmetric part $\bv{w}(t):\Omega_t\rightarrow \R^{3\times 3}_{asym}$ of the velocity gradient
+\begin{equation}
+w_{ij}:=\frac{1}{2}\left( \frac{\partial v_i(t,\bv{x})}{\partial x_j}-\frac{\partial v_j(t,\bv{x})}{\partial x_i}\right),
+\end{equation}
+where $\R^{3\times 3}_{asym}:=\left\lbrace \bv{x}\in \R^{3\times 3}\middle|~x_{ij}=-x_{ji}~ \forall i,j,~i\neq j \right\rbrace$. In addition to the standard time derivative $\dot{f}(t,\bv{x}):=\frac{\partial f(t,\bv{x})}{\partial t}+\frac{\partial f(t,\bv{x})}{\partial \bv{x}}\bv{v}(t,\bv{x})$ we define the Jaumann derivative (Jaumann rate) of a symmetric tensor $\bv{T}(t):\Omega_t\rightarrow \R^{3\times 3}_{sym}$ as follows
+
+\begin{equation}\label{eq:JaumannDerivativeDefinition}
+\jaum{T}_{ij}:=\dot{T}_{ij}+(T_{ij}w_{kj}+T_{jk}w_{ki}).
+\end{equation}
+For example the Jaumann rate for the Cauchy stress tensor $\bv{\sigma}(t):\Omega_t\rightarrow \R^{3\times 3}_{sym}$ is given by
+\begin{equation}
+\jaum{\sigma}_{ij}=\dot{\sigma}_{ij}+\left(\sigma_{ik}w_{kj}+\sigma_{jk}w_{ki}\right),
+\end{equation}
+where $\dot{\sigma}_{ij}$ denotes the  material derivative, given by
+\begin{equation}
+\dot{\sigma}_{ij}:=\frac{\partial \sigma_{ij}(t,\bv{x})}{ \partial t}+\frac{\partial \sigma_{ij}(t,\bv{x})}{ \partial x_k} v_k.
+\end{equation}
+We assume that the deformation rate is decomposed into an elastic and a non-elastic part
+\begin{equation}
+d_{ij}=d^{e}_{ij}+d^{n}_{ij}.
+\end{equation}
+The Jaumann rate of the Kirchhoff stress tensor $\bv{\tau}(t):\Omega_0\rightarrow \R^{3\times 3}_{sym}$ is related to the material derivative of the $1^{st}$ Piola-Kirchhoff stress tensor $\bv{s}(t):\Omega_0\rightarrow \R^{3\times 3}$ (see \cite{Belytschko2000} Chapter 5), as follows
+\begin{equation}
+\jaum{\tau}_{ij}=\dot{s}_{ij}+(\sigma_{ik}d_{jk}+\sigma_{kj}d_{ik})-\sigma_{ik}\frac{\partial v_j}{\partial x_k}, 
+\end{equation}
+or in the short form
+\begin{equation}
+\jaum{\tau}_{ij}=\dot{s}_{ij} +G^{(*)}_{jikl} \frac{\partial v_k}{\partial x_l},
+\end{equation}
+where 
+\begin{equation}
+G^{(*)}_{ijkl}:=\dfrac{1}{2}\left(\sigma_{il}\delta_{jk}+\sigma_{ik}\delta_{jl}+\sigma_{lj}\delta_{ki}+\sigma_{kj}\delta_{li}\right)-\sigma_{il}\delta_{kj}\quad  \delta_{ij}:=\left\{
+\begin{array}{cc}
+0, & i \neq j, \\
+1, & i = j.
+\end{array}\right.
+\end{equation}
+We can write the equilibrium equation of the body in actual configuration in  terms of the  Cauchy stress tensor $\bv{\sigma}$:
+\begin{equation}\label{eq:EquilibriumEquationCauchy}
+-\text{div}\bv{\sigma}=\rho \bv{f} \quad \Leftrightarrow \quad  \frac{\partial \sigma_{ji}}{\partial x_j}  +\rho f_i=0,
+\end{equation}
+where $\rho$ and $\bv{f}$ are the density in actual configuration and the body forces respectively.\\
+Using the ${1}^{st}$ Piola-Kirchoff stress tensor $\bv{s}(t):\Omega_0\rightarrow \R^{3\times 3}$:
+\begin{equation}
+\bv{s}(t,\bv{X}):=J(t,\bv{X})\bv{\sigma}(t,\bv{\varphi}(t,\bv{X}))\left(\frac{\partial \bv{\varphi}(t,\bv{X})}{\partial \bv{X}}\right)^{-T} 
+\end{equation}
+in the reference configuration, (\ref{eq:EquilibriumEquationCauchy}) takes an equivalent  form in terms of
+\begin{equation}\label{eq:EquilibriumEquation1PiolaKirchoff}
+\frac{\partial s_{ji}}{\partial X_j} +\rho_0 f_i=0,
+\end{equation}
+where $\rho_0$ is the density in the reference configuration. It should be noted that due to the mass conservation law, the density in the reference configuration does not depend on time (the total mass of the body remains constant with time).
+
+Later we will need the rate variant of (\ref{eq:EquilibriumEquation1PiolaKirchoff})
+
+\begin{equation}\label{eq:EquilibriumRateEquation1PiolaKirchoff}
+ \frac{\partial \dot{s}_{ji}}{\partial X_j} +\rho_0 \dot{f}_i=0.
+\end{equation}
+
+
+\section{Hart's constitutive equations for hypoelasto-viscoplasticity}\label{sec:HartConstitutiveLaw}
+According to \cite{Belytschko2000} the constitutive equation for arbitrary hyperelastic-plastic material admits the following representation: the Jaumann rate of Cauchy stress $\jaum{\sigma}_{ij}$ is a homogeneous linear function of the elastic  part $d^{e}_{ij}$ of the deformation rate $d_{ij}$ and under the assumption of material isotrophy we have
+\begin{eqnarray}
+d_{ij}&=&d^e_{ij}+d^n_{ij}, \label{eq:RateOfDeformationAdditiveDecomposition}\\
+\jaum{\sigma}_{ij}&=& \lambda d^{e}_{kk} \delta_{ij}+2\mu d^{e}_{ij} \\
+d^{n}_{ij}&=&f_{ij}(\bv{\sigma},\bv{q}), \label{eq:CauchyJaumannDerivativeHookLaw} \\
+\jaum{q}_k&=&g_k(\bv{\sigma},\bv{q}), \\
+ d^{n}_{kk}&=& 0, \label{eq:NonElasticDeformationRateIncompressibility}
+\end{eqnarray}
+where $d^e_{ij}$, $d^n_{ij}$ are  the elastic and non-elastic parts of the rate-of-deformation (\ref{eq:RateOfDeformation}) respectively,  $\bv{q}$ - inner variables, $f_{ij}$ and $g_k$ some functions, $\lambda$ and $\mu$ are Lam\'e coefficients from the linear elasticity theory for small deformations.
+
+The material response in dilatation is assumed to be elastic. According to Hart's model \cite{Ha76,Ha82,MuChaDBE3,Mu82}, the nonelastic strain is decomposed into two (time-dependent) components
+\begin{equation}\label{eq:NonElasticStrainDecomposition}
+d^{n}_{ij}=\jaum{\varepsilon}^{a}_{ij}+d^{p}_{ij},
+\end{equation}
+
+where $\varepsilon^{a}_{ij}$ is the anelastic rate-of-deformation 
+%, a stored strain which reflects the magnitude and direction of prior deformation history
+and $d^{p}_{ij}$ is the completely irrecoverable and path dependent permanent part. The two state variables in the Hart's model are the anelastic part  $\varepsilon^{a}_{ij}$ and a scalar $\sigma^{(*)}$, called hardness, which is similar to an isotropic strain hardening parameter or current yield stress.\\
+The deviatoric component $\bv{\sigma}{'}$ ($\sigma{'}_{ij}:=\sigma_{ij}-\frac{1}{3}\sigma_{kk}$) of the Cauchy stress tensor is decomposed into two auxiliary tensors
+
+
+\begin{equation}\label{eq:StressDeviatorDeomposition}
+\sigma{'}_{ij}=\sigma{'}^{a}_{ij}+\sigma{'}^{f}_{ij}.
+\end{equation}
+The flow rules in Hart's model for the strains and  strain rates are  \cite{MuChaDBE3,Mu82}
+
+
+\begin{equation}\label{eq:AnelasticStrain}
+\varepsilon^{a}_{ij}=\frac{\varepsilon^{(a)}}{\sigma^{(a)}}\sigma{'}^{a}_{ij},
+\end{equation}
+
+\begin{equation}\label{eq:PlasticStrainRate}
+d^{p}_{ij}=\frac{d^{(p)}}{\sigma^{(a)}}\sigma{'}^{a}_{ij},
+\end{equation}
+
+\begin{equation}\label{eq:NonElasticStrainRate}
+d^{n}_{ij}=\frac{d^{(n)}}{\sigma^{(f)}}\sigma{'}^{f}_{ij},
+\end{equation}
+where $d^{(n)}$, $\varepsilon^{(a)}$, $d^{(p)}$,  $\sigma^{(a)}$,  $\sigma^{(f)}$ are scalar invariants of the corresponding tensors, defined by 
+
+\begin{equation}\label{eq:ScalarInvariants}
+\begin{array}{c}
+d^{(n)}:=\sqrt{d^{n}_{ij}d^{n}_{ij}},\quad  d^{(p)}:=\sqrt{d^{p}_{ij}d^{p}_{ij}}, \quad \varepsilon^{(a)}:=\sqrt{\varepsilon^{a}_{ij}\varepsilon^{a}_{ij}}, \\[4ex]
+\sigma^{(a)}:=\sqrt{\sigma{'}^{a}_{ij} \sigma{'}^{a}_{ij}},\quad  \sigma^{(f)}:=\sqrt{\sigma{'}^{f}_{ij} \sigma{'}^{f}_{ij}}.
+\end{array}
+\end{equation}
+Relationships between scalar invariants are
+
+\begin{equation}\label{eq:AnElasticStressInvariant}
+\sigma^{(a)}= \frac{2}{3} \mathcal{M} \varepsilon^{(a)},
+\end{equation}
+
+\begin{equation}\label{eq:NonElasticStrainRateInvariant}
+d^{(n)}=d_0 \left(\sqrt{\frac{3}{2}} \right)^{\mathit{M}+1}(\sigma^{(f)}/\sigma_0)^{\mathit{M}},
+\end{equation}
+
+\begin{equation}\label{eq:PlasticStrainRateInvariant}
+d^{(p)}=\sqrt{\frac{3}{2}}d^{(*)}\left( \ln \frac{\sigma^{(*)}}{\sqrt{\frac{3}{2}}\sigma^{(a)}}\right)^{-1/\lambda},
+\end{equation}
+
+\begin{equation}\label{eq:StrainHardnessRate}
+d^{(*)}=d^{(*)}_{sT}\left(\frac{\sigma^{(*)}}{\sigma^{(*)}_s}\right)^{m} e^{\frac{Q}{R}\left(\frac{1}{T_B}-\frac{1}{T}\right)},
+\end{equation}
+
+
+\begin{equation}\label{eq:StressHardnessRate}
+\dot{\sigma}^{(*)}=\sqrt{\frac{2}{3}}d^{(p)} \sigma^{(*)} \Gamma(\sigma^{(*)},\sigma^{(a)}),
+\end{equation}
+
+\begin{equation}\label{eq:JustGamma}
+\Gamma(\sigma^{(*)},\sigma^{(a)})=\left(\frac{\beta}{\sigma^{(*)}}\right)^{\delta}\left(\frac{\sqrt{\frac{3}{2}}\sigma^{(a)}}{\sigma^{(*)}}\right)^{\beta/\sigma^{(*)}},
+\end{equation}
+where $\mathcal{M}$, $\mathit{M}$, $m$, $\lambda$, $d_0$, $\sigma_0$, $d^{(*)}_{sT}$, $\sigma^{(*)}_s$, $\beta$, $\delta$, $R$, $Q$, $T_B$  are scalar parameters. Such that $\sigma^{(*)}_s$ is the reference value of stress hardness $\sigma^{(*)}$, $T_B$ is the reference value of the temperature $T$, $d^{(*)}_{sT}$ is the reference value of the rate of strain hardness, $R$ is the gas constant, $Q$ is the activation energy for atomic self diffusion, $\beta$ and $\delta$ are strain hardening parameters. 
+
+\section{Time integration}\label{sec:LargeViscoplacticity:HartModelTimeIntegration}
+Using equations (\ref{eq:StressDeviatorDeomposition})-(\ref{eq:JustGamma}) one can directly obtain differential equations for  $\varepsilon^{a}_{ij}$ and $\sigma^{(*)}$
+
+
+\begin{eqnarray}
+(\ref{eq:RateOfDeformationAdditiveDecomposition}): ~d^{p}_{ij}&=&d^{n}_{ij}-\jaum{\varepsilon}^{a}_{ij} \\
+(\ref{eq:AnelasticStrain}),(\ref{eq:AnElasticStressInvariant}):~ \sigma{'}^{a}_{ij}&=&\frac{2}{3} \mathcal{M}\varepsilon^{a}_{ij} \\
+(\ref{eq:StressDeviatorDeomposition}):~ \sigma{'}^{f}_{ij}&=&\sigma{'}_{ij}- \frac{2}{3}  \mathcal{M} \varepsilon^{a}_{ij}.
+\end{eqnarray}
+
+\begin{eqnarray}
+d^{n}_{ij}&=&\frac{d^{(n)}}{\sigma{'}^{(f)}}\sigma{'}^{f}_{ij}=\frac{d^{(n)}}{\sigma{'}^{(f)}}\left(\sigma{'}_{ij}-\frac{2}{3}  \mathcal{M} \varepsilon^{a}_{ij}\right) \nonumber \\
+&=& \frac{d_0}{(\sigma_0)^{\mathit{M}}}\left(\sqrt{\frac{2}{3}} \right)^{\mathit{M}+1}\frac{(\sigma{'}^{(f)})^{\mathit{M}}}{(\sigma{'}^{(f)})}\left(\sigma{'}_{ij}-\frac{2}{3}  \mathcal{M} \varepsilon^{a}_{ij}\right) \nonumber \\
+&=&\frac{d_0}{(\sigma_0)^{\mathit{M}}}\left(\sqrt{\frac{2}{3}} \right)^{\mathit{M}+1} (\sigma{'}^{(f)})^{\mathit{M}-1}\sigma{'}^{f}_{ij},
+\end{eqnarray}
+Starting with  (\ref{eq:NonElasticStrainDecomposition}) and using  sequently (\ref{eq:PlasticStrainRate}), (\ref{eq:PlasticStrainRateInvariant}), (\ref{eq:AnelasticStrain}), (\ref{eq:AnElasticStressInvariant}) we obtain
+\begin{eqnarray}\label{eq:AnelasticJaumDerivative}
+\jaum{\varepsilon}^{a}_{ij}&=&d^{n}_{ij}-d^{p}_{ij}=d^{n}_{ij}-\frac{d^{(p)}}{\sigma^{(a)}}\sigma{'}^{a}_{ij} \nonumber \\
+&=&d^{n}_{ij}- d^{(*)} \sqrt{\frac{2}{3}}\left[ \ln \left(\frac{\sigma^{(*)}}{\sqrt{\frac{3}{2}}\sigma^{(a)}} \right)\right]^{-1/\lambda} \frac{\sigma{'}^{a}_{ij}}{\sigma^{(a)}} \nonumber\\
+&=&d^{n}_{ij}- d^{(*)}\sqrt{\frac{2}{3}} \left[ \ln \left(\frac{\sigma^{(*)}}{\sqrt{\frac{3}{2}}\sigma^{(a)}} \right)\right]^{-1/\lambda} \frac{\varepsilon^{a}_{ij}}{\varepsilon^{(a)}}\nonumber\\
+&=&d^{n}_{ij}- d^{(*)}\sqrt{\frac{2}{3}} \left[ \ln \left(\frac{\sigma^{(*)}}{\sqrt{\frac{2}{3}}\mathcal{M}\varepsilon^{(a)}} \right)\right]^{-1/\lambda} \frac{\varepsilon^{a}_{ij}}{\varepsilon^{(a)}},
+\end{eqnarray}
+Starting with  (\ref{eq:StressHardnessRate}) and using (\ref{eq:PlasticStrainRateInvariant}), (\ref{eq:StrainHardnessRate}), (\ref{eq:JustGamma}), (\ref{eq:AnElasticStressInvariant}) we obtain
+\begin{eqnarray}\label{eq:AnelasticSternSigmaDerivative}
+\dot{\sigma}^{(*)}&=&d^{(*)}\sigma^{(*)}\left( \ln \frac{\sigma^{(*)}}{\sqrt{\frac{3}{2}}\sigma^{(a)}}\right)^{-1/\lambda}  \Gamma(\sigma^{(*)},\sigma^{(a)})\nonumber \\
+&=&d^{(*)}_{sT}\sigma^{(*)}\left(\frac{\sigma^{(*)}}{\sigma^{(*)}_s}\right)^{m} e^{\frac{Q}{R}\left(\frac{1}{T_B}-\frac{1}{T}\right)}\left( \ln \frac{\sigma^{(*)}}{\sqrt{\frac{3}{2}}\sigma^{(a)}}\right)^{-1/\lambda}  \Gamma(\sigma^{(*)},\sigma^{(a)}) \nonumber \\
+&=&d^{(*)}_{sT}\sigma^{(*)}\left(\frac{\sigma^{(*)}}{\sigma^{(*)}_s}\right)^{m} e^{\frac{Q}{R}\left(\frac{1}{T_B}-\frac{1}{T}\right)}\left( \ln \frac{\sigma^{(*)}}{\sqrt{\frac{3}{2}}\sigma^{(a)}}\right)^{-1/\lambda}\left(\frac{\beta}{\sigma^{(*)}}\right)^{\delta}\left(\frac{\sqrt{\frac{3}{2}}\sigma^{(a)}}{\sigma^{(*)}}\right)^{\beta/\sigma^{(*)}} \nonumber \\
+&=&
+d^{(*)}_{sT}\sigma^{(*)}\left( \ln \frac{\sigma^{(*)}}{\sqrt{\frac{2}{3}}\mathcal{M}\varepsilon^{(a)}}\right)^{-1/\lambda}\!\!\!\!\left(\frac{\sqrt{\frac{2}{3}}\mathcal{M}\varepsilon^{(a)}}{\sigma^{(*)}}\right)^{\beta/\sigma^{(*)}}\!\!\!\!\!\!\!\!\!\!\!\! e^{\frac{Q}{R}\left(\frac{1}{T_B}-\frac{1}{T}\right)}\left(\frac{\beta}{\sigma^{(*)}}\right)^{\delta}\left(\frac{\sigma^{(*)}}{\sigma^{(*)}_s}\right)^{m}\!\!\!\!\!\!.
+\end{eqnarray}
+
+\begin{remark}\label{remark:YieldRegularization}
+As one can see the equations (\ref{eq:AnelasticJaumDerivative}), (\ref{eq:AnelasticSternSigmaDerivative}) have singularity in right-hand side as $\sigma^{(*)}=\sqrt{\frac{3}{2}}\sigma^{(a)}$ (analog to plastic flow at the yield stress. In region $\sigma^{(*)}\approx\sqrt{\frac{3}{2}}\sigma^{(a)}$ the equation \ref{eq:PlasticStrainRateInvariant} predicts large values of $d^{p}$ and consequently very small time steps are required in a numerical computational process to capture this phenomena. For the sake of computational efficiency we impose in that region the condition $\dot{\sigma}^{(*)}=\sqrt{\frac{3}{2}}\dot{\sigma}^{(a)}$. Using this condition we obtain
+\begin{equation}\label{eq:RegularizedPlasticStrainRate}
+d^{(p)}=\frac{\sigma^{(a)}_{ij}d^{(n)}_{ij}/\sigma^{(a)}}{1+\sigma^{(*)}\Gamma(\sigma^{(*)},\sigma^{(a)})/\mathcal{M}}.
+\end{equation}
+\end{remark}
+\begin{remark}\label{remark:ZeroRegularization}
+As one can see the equations (\ref{eq:AnelasticJaumDerivative}), (\ref{eq:AnelasticSternSigmaDerivative}) have singularity in right-hand side as $\sigma^{(a)}=0$. Hence, up to given tolerance we suppose material to be described by linear elastic equations.
+\end{remark}
+Taking into  account remarks \ref{remark:YieldRegularization} and \ref{remark:ZeroRegularization} we obtain following regularization procedure for prescribed tolerance $1>\varrho>0$, that should be close to $1$ and $1>\varrho_0>0$, that should be close to $0$:
+
+%   \psovalbox{
+%     \psframebox{
+\begin{small}\begin{figure}[H]
+\begin{psmatrix}[rowsep=0.6,colsep=0.7]
+\psovalbox{given $\sigma^{(*)}$ and $\sigma^{(a)}$ }            &  &\\
+\psdiabox{$\varrho_0\leq \sigma^{(a)}\leq \varrho\sigma^{(*)}$} &\psdiabox{$\sigma^{(a)}<\varrho_0$}  &  \\
+\psframebox{use  (\ref{eq:AnelasticJaumDerivative}), (\ref{eq:AnelasticSternSigmaDerivative})}  &\psframebox{\begin{minipage}{4cm}use linear elastic \\ strain-stress relation \end{minipage}}	 & \psframebox{replace  (\ref{eq:PlasticStrainRateInvariant}) with (\ref{eq:RegularizedPlasticStrainRate})}\\
+&\psovalbox{Stop}  & \\
+    \ncline{->}{1,1}{2,1}
+    \ncline{->}{2,1}{2,2}\aput{:U}{No}
+    \ncline{->}{2,1}{3,1}\aput{:D}{Yes}
+    \ncline{->}{2,2}{3,2}\bput{:D}{Yes}
+    \ncline{-}{2,2}{2,3}\aput{:U}{No}\bput{:U}{ $\sigma^{(a)}>\varrho\sigma^{(*)}$}
+    \ncline{->}{2,3}{3,3}
+    \ncline{->}{3,1}{4,2}
+    \ncline{->}{3,2}{4,2}
+    \ncline{->}{3,3}{4,2}
+\end{psmatrix}
+\caption{Flow chart. Hart's model regularization}
+\end{figure}    %
+\end{small}
+
+
+\section{Updated Lagrange approach}\label{sec:LargeViscoplacticity:UpdatedLagrangeApproach}
+We consider the body $\Omega\subset\R^{d}$, d=2,3 that occupies a domain $\Omega_t\subset\R^{d}$ at time $t$. Our objective is the deformation of the body due to applied forces and displacements with respect to the real time $t$. Using the  Updated Langrange Approach let $\Omega_{t}$ be the reference configuration for the time interval $[t,t+\Delta t]$.
+
+The first assumption made here is that the deformations are nearly incompressible, i.e. $\frac{\partial v_i}{\partial x_i} \approx 0$ or $\frac{\partial v_i}{\partial x_i} \ll 1$. This assumption is quite reasonable in our situation since non-elastic deformations ($\bv{d}^{n}$) preserve the volume by definition, see (\ref{eq:NonElasticDeformationRateIncompressibility}) and they are  much lager then the elastic ones ($\bv{d}^{e}$). Hence, the volume deformation is neglectable with respect to total one. Thus  the Jacobian $J$ of the deformation gradient $F_{ij}=\frac{\partial x_i}{\partial X_j}$ is one, while  $\dot{J}=J\text{tr}\bv{d}$ (see \cite{BoWo97} Section 3.14) and $J(t,\bv{X})|_{t=0}=1$. Thus the deformation gradient defines an  orthogonal matrix.  Under this assumption one sees
+\begin{equation}\label{eq:IncompressibilityCauchyKirchhoffJuamannDerivativeRelation}
+\jaum{\tau}_{ij}\cong \jaum{\sigma}_{ij} \mbox{ since } J:=\mbox{det} \frac{\partial \bv{x}}{\partial \bv{X}}\cong  1 \mbox{ and } \tau_{ij}=J \sigma_{ij}.
+\end{equation}
+The Green - St. Venant strain tensor $\bv{E}(t):\Omega_0\rightarrow\R^{3\times 3}$ with
+
+\begin{equation}\label{eq:GreenStVenant}
+E_{ij}=\frac{1}{2}\left(\frac{\partial u_i}{\partial X_j}+\frac{\partial u_j}{\partial X_j}+\frac{\partial u_k}{\partial X_i}\frac{\partial u_k}{\partial X_j}\right),
+\end{equation}
+the rate of (\ref{eq:GreenStVenant}) is related to the rate-of-deformation (\ref{eq:RateOfDeformation}) and deformation gradient $F_{ij}$ as follows (see \cite{Belytschko2000}, p. 96)
+
+\begin{equation}\label{eq:GreenStVenantRate}
+\dot{E}_{ij}=d_{kl}\frac{\partial x_k}{\partial X_i}\frac{\partial x_l}{\partial X_j}.
+\end{equation}
+Thus, in the updated Lagrangian approach it holds
+\begin{equation}\label{eq:GreenStVenantRateUpdatedLagrange}
+\dot{E}_{ij}=d_{ij} \mbox{ at the origin of the time interval } [t,t+\Delta t].
+\end{equation}
+Using (\ref{eq:GreenStVenantRateUpdatedLagrange}),  (\ref{eq:IncompressibilityCauchyKirchhoffJuamannDerivativeRelation}) and  (\ref{eq:CauchyJaumannDerivativeHookLaw}) we obtain for the origin of the time interval $[t,t+\Delta t]$
+
+\begin{equation}\label{eq:KirchhoffJaumannDerivativeHookLaw}
+\jaum{\tau}_{ij}= \lambda \dot{E}^{e}_{kk} \delta_{ij}+2\mu \dot{E}^{e}_{ij}.
+\end{equation}
+\newpage
+\section{A boundary element method for hypoelasto-viscoplasticity}\label{sec:BEM_HyperElasto_VP}
+
+In this chapter we use Hart's modell of viscoplasticity and investigate a boundary element solution procedure. Our  Galerkin approach extends the collocation procedure in \cite{MuCha84,Mu82}. We describe in detail the nested loops which are necessary for our BEM implementation for details see \cite{DonigaDipl05}. In section \ref{sec:BEM} we present a Galerkin boundary element method for viscoplasticity and in section \ref{sec:BEM:Benchmarks}  benchmark simulations.
+
+% show that numerical results for pure BEM formulation are comparable with finite element formulation.
+
+%\setcounter{section}{-1}
+
+% \include{Titelseite}
+% \pagenumbering{roman}
+% \include{Index}
+\subsection{Integral operators}\label{sec:BEM}
+Following \cite{MuCha84} we present a boundary element formulation for viscoplastic problems with large deformations and large strains. In order to derive a representation formula  for the velocities  we use the fundamental solution of the Lam\'e operator  $\LameFundamentalSolution$. Assuming that the deformation is almost incompressible then the Zaremba-Jaumann time derivative of the Cauchy stress tensor 
+\begin{equation}
+\jaum{\bv{\sigma}}=\dot{\bv{\sigma}}-\bv{w}\cdot\bv{\sigma}+\bv{\sigma}\cdot\bv{w}
+\end{equation} 
+and of the Kirchhoff stress tensor 
+\begin{equation}\label{KirchhoffDef}
+\jaum{\bv{\tau}}=\dot{\bv{s}}+(\bv{\sigma}\cdot\bv{d}^{T}+\bv{d}\cdot\bv{\sigma})-\bv{\sigma}\cdot\frac{\partial \bv{v}}{ \partial \bv{x}},
+\end{equation} 
+satisfy the relation (see \cite{MuCha84a,Mu82,YamHir78})
+\begin{equation}
+\jaum{\bv{\tau}}\;\cong\;\jaum{\bv{\sigma}}.
+\end{equation}  
+Hence, there holds (see Section \ref{sec:LargeViscoplacticity:UpdatedLagrangeApproach})
+
+\begin{equation}
+\jaum{\bv{\tau}}\;\cong\;\mathbb{C}:\bv{d}^{e}\label{hypo2}
+\end{equation} 
+with the elastic part $\bv{d}^{e}$ of the symmetric strain rate tensor. 
+
+We multiply  the local equilibrium (\ref{eq:EquilibriumRateEquation1PiolaKirchoff}) in the rate formulation  with the Greens function  $\LameFundamentalSolution$ and integrate by parts yielding 
+\begin{equation}
+\int_{{\Omega_0}}\;(\refgrad \cdot\dot{\bv{s}}+\rho_{0}\dot{\bv{f}})\cdot\LameFundamentalSolution\;d\Omega\nonumber
+\end{equation} 
+with 
+\begin{equation}
+\LameFundamentalSolution\cdot(\refgrad \cdot\dot{\bv{s}})=\refgrad \cdot(\dot{\bv{s}}\cdot\LameFundamentalSolution)-(\refgrad \circ\LameFundamentalSolution):{\bv{s}}.\nonumber
+\end{equation} 
+Integrating by parts we obtain 
+\begin{eqnarray}
+0&=&\int_{{\Omega_0}}\:\rho_{0}\:\LameFundamentalSolution\cdot\dot{\bv{f}}\;d\Omega+
+\int_{{\Omega_0}}\:\LameFundamentalSolution\cdot(\refgrad \cdot\dot{\bv{s}})\;d\Omega\nonumber\\
+&=&\int_{{\Omega_0}}\:\rho_{0}\:\LameFundamentalSolution\cdot\dot{\bv{f}}\;d\Omega+
+\int_{\partial{\Omega_0}}\:\bv{n}_{0}\cdot\dot{\bv{s}}\cdot\LameFundamentalSolution\;d \Gamma-
+\int_{{\Omega_0}}\:(\refgrad \circ\LameFundamentalSolution):\dot{\bv{s}}\;d\Omega\nonumber\\
+&=&\int_{{\Omega_0}}\:\rho_{0}\:\LameFundamentalSolution\cdot\dot{\bv{f}}\;d\Omega+
+\int_{\partial{\Omega_0}}\:\underline{\dot{\tilde{t}}}\cdot\LameFundamentalSolution\;d \Gamma-
+\int_{{\Omega_0}}\:(\refgrad \circ\LameFundamentalSolution):\dot{\bv{s}}\;d\Omega,\nonumber
+\end{eqnarray} 
+with $\underline{\dot{\tilde{t}}}:=\bv{n}_{0}\cdot\dot{\bv{s}}$. The relation (\ref{KirchhoffDef}) can be rewritten with a suitable tensor of forth order $\stackrel{(\star)}{\mathbb{G}}$  as 
+\begin{equation}
+\jaum{\bv{\tau}}=\dot{\bv{s}}+\stackrel{(\star)}{\mathbb{G}}:\left(\dfrac{\partial \bv{v}}{\partial  \bv{X}}\right)^T.\nonumber
+\end{equation} 
+For  $\stackrel{(\star)}{\G}$ there holds 
+
+\begin{equation}
+\stackrel{(\star)}{\mathbb{G}}=\stackrel{(\star)}{G}_{abcd}\;\mathbf{e}_{a}\otimes\mathbf{e}_{b}\otimes\mathbf{e}_{c}\otimes\mathbf{e}_{d}
+\end{equation} 
+with
+\begin{equation}
+\stackrel{(\star)}{G}_{abcd}:=\frac{1}{2}(\sigma_{ad}\delta_{bc}+\sigma_{ac}\delta_{bd}+\sigma_{db}\delta_{ca}+\sigma_{cb}\delta_{da})-\sigma_{ad}\delta_{cb}.
+\end{equation} 
+Thus we obtain
+
+\begin{eqnarray}
+0&=&\int_{{\Omega_0}}\:\rho_{0}\:\LameFundamentalSolution\cdot\dot{\bv{f}}\;d\Omega+
+\int_{\partial{\Omega_0}}\:\underline{\dot{\tilde{t}}}\cdot\LameFundamentalSolution\;d \Gamma-
+\int_{{\Omega_0}}\:(\refgrad \circ\LameFundamentalSolution):\jaum{\bv{\tau}}\;d\Omega+\nonumber\\
+&&\int_{{\Omega_0}}\:(\refgrad \circ\LameFundamentalSolution):(\stackrel{(\star)}{\mathbb{G}}:(\nabla \bv{v})^{T})\;d\Omega,\nonumber
+\end{eqnarray}
+Using (\ref{hypo2}) the third integral in the above equation can be written  as follows:
+
+\begin{eqnarray}
+\int_{{\Omega_0}}\:(\refgrad \circ\LameFundamentalSolution):\jaum{\bv{\tau}}\;d\Omega&=&\int_{{\Omega_0}}\:\mathcal{E}:\jaum{\bv{\tau}}\;d\Omega
+=\int_{{\Omega_0}}\:\mathcal{E}:\mathbb{C}:\bv{d}^{e}\;d\Omega\nonumber\\
+&=&\int_{{\Omega_0}}\:\mathcal{E}:\mathbb{C}:(\bv{d}-\bv{d}^{n})\;d\Omega
+=\int_{{\Omega_0}}\:\Sigma:(\bv{d}-\bv{d}^{n})\;d\Omega\nonumber\\
+&=&\int_{{\Omega_0}}\:\Sigma:\bv{d}\;d\Omega-\int_{{\Omega_0}}\:\Sigma:\bv{d}^{n}\;d\Omega\nonumber\\
+&=&\int_{{\Omega_0}}\:\Sigma:(\nabla \bv{v})^{T}\;d\Omega-\int_{{\Omega_0}}\:2\mu\mathcal{E}:\bv{d}^{n}\;d\Omega\nonumber\\
+&=&\int_{{\Omega_0}}\:(\nabla\circ\bv{v}):\Sigma\;d\Omega
+-\int_{{\Omega_0}}\:2\mu(\refgrad \circ\LameFundamentalSolution):\bv{d}^{n}\;d\Omega.\nonumber
+\end{eqnarray} 
+Here we have used that the double dot product of a symmetric tensor with the antisymmetric part of a tensor as well as the double dot product of  a deviator with the unit tensor vanish. Using that the reference configuration and the actual one agree, hence $\refgrad =\actgrad$ holds, we obtain by partial integration 
+\begin{eqnarray}
+\int_{{\Omega_0}}\:(\refgrad \circ\LameFundamentalSolution):\jaum{\bv{\tau}}\;d\Omega&=&\int_{{\Omega_0}}\:(\nabla\circ\bv{v}):\Sigma\;d\Omega
+-\int_{{\Omega_0}}\:2\mu(\refgrad \circ\LameFundamentalSolution):\bv{d}^{n}\;d\Omega\nonumber\\
+&=&\int_{\partial{\Omega_0}}\:\bv{n}_{0}\cdot\Sigma\cdot\bv{v}\;d \Gamma
+-\int_{{\Omega_0}}\:\bv{v}\cdot(\refgrad \cdot\Sigma)\;d\Omega-\nonumber\\
+ &&\int_{{\Omega_0}}\:2\mu(\refgrad \circ\LameFundamentalSolution):\bv{d}^{n}\;d\Omega\nonumber\\
+&=&\int_{\partial{\Omega_0}}\:\cT_{n_Y} \LameFundamentalSolution\cdot\bv{v}\;d \Gamma+
+\int_{{\Omega_0}}\:\bv{v}\cdot\underline{\mathcal{F}}\;d\Omega-\nonumber\\
+&&\int_{{\Omega_0}}\:2\mu(\refgrad \circ\LameFundamentalSolution):\bv{d}^{n}\;d\Omega.\nonumber
+\end{eqnarray} 
+If one inserts $\underline{\mathcal{F}}$ by $\delta(\bv{X},\bv{Y})\mathbf{e}_a$ with $a=1,2,3$ and adds the resulting three equations one obtains for $\bv{v}(\bv{X})$, $\bv{X}\in{\Omega_0}$ the following representation formula
+
+\begin{eqnarray}
+\bv{v}(\bv{X})&=&\int_{\partial{\Omega_0}}\:\LameFundamentalSolution(\bv{X},\bv{Y})\cdot\underline{\dot{\tilde{t}}}(\bv{Y})\;d \Gamma_{Y}-
+\int_{\partial{\Omega_0}}\:\cT_{n_Y} \LameFundamentalSolution(\bv{X},\bv{Y})\cdot\bv{v}(\bv{Y})\;d \Gamma_{Y}+\nonumber\\
+&&\int_{{\Omega_0}}\:\rho_{0}\:\LameFundamentalSolution(\bv{X},\bv{Y})\cdot\dot{\bv{f}}(\bv{Y})\;d\Omega_{Y}+
+\int_{{\Omega_0}}\:2\mu\mathcal{E}(\bv{X},\bv{Y}):\bv{d}^{n}(\bv{Y})\;d\Omega_{Y}+\nonumber\\
+&&+\int_{{\Omega_0}}\:\mathcal{E}(\bv{X},\bv{Y}):\left[ \stackrel{(\star)}{\mathbb{G}}(\bv{Y}):(\nabla \bv{v})^{T}(\bv{Y})\right] \;d\Omega_{Y},\nonumber
+\end{eqnarray} 
+or
+\begin{eqnarray}
+\bv{v}(\bv{X})&=&\int_{\partial{\Omega_0}}\:\LameFundamentalSolution(\bv{X},\bv{Y})\cdot\underline{\dot{\tilde{t}}}(\bv{Y})\;d \Gamma_{Y}-
+\int_{\partial{\Omega_0}}\:\cT_{n_Y} \LameFundamentalSolution(\bv{X},\bv{Y})\cdot\bv{v}(\bv{Y})\;d \Gamma+\nonumber\\
+&&\int_{{\Omega_0}}\:\rho_{0}\:\LameFundamentalSolution(\bv{X},\bv{Y})\cdot\dot{\bv{f}}(\bv{Y})\;d\Omega_{Y}+
+\int_{{\Omega_0}}\:2\mu\left[ \refgrad \circ\LameFundamentalSolution(\bv{X},\bv{Y})\right] :\bv{d}^{n}(\bv{Y})\;d\Omega_{Y}+\nonumber\\
+&&+\int_{{\Omega_0}}\:\left[ \refgrad \circ\LameFundamentalSolution(\bv{X},\bv{Y})\right] :\left[ \stackrel{(\star)}{\mathbb{G}}(\bv{Y}):(\nabla \bv{v})^{T}(\bv{Y})\right] \;d\Omega_{Y}.\nonumber
+\end{eqnarray} 
+The last two domain integrals we again integrate by parts and obtain 
+
+\begin{equation}
+\int_{{\Omega_0}}\:2\mu\left[ \refgrad \circ\LameFundamentalSolution\right] :\bv{d}^{n}\;d\Omega=-\int_{{\Omega_0}}\:2\mu\:\LameFundamentalSolution\cdot(\refgrad \cdot\bv{d}^{n})\;d\Omega+
+\int_{\partial{\Omega_0}}\:2\mu\:\bv{n}_{0}\cdot\bv{d}^{n}\cdot\LameFundamentalSolution\;d \Gamma,
+\nonumber
+\end{equation} 
+or, respectively,
+
+\begin{eqnarray}
+\int_{{\Omega_0}}\:\left[ \refgrad \circ\LameFundamentalSolution\right] :\left[ \stackrel{(\star)}{\mathbb{G}}:(\nabla \bv{v})^{T}\right] \;d\Omega&=&
+-\int_{{\Omega_0}}\:\LameFundamentalSolution\cdot(\refgrad \cdot\left[ \stackrel{(\star)}{\mathbb{G}}:(\nabla \bv{v})^{T}\right])\;d\Omega\nonumber\\
+&&+\int_{\partial{\Omega_0}}\:\bv{n}_{0}\cdot\left[ \stackrel{(\star)}{\mathbb{G}}:(\nabla \bv{v})^{T}\right]\cdot\LameFundamentalSolution\;d \Gamma.
+\nonumber
+\end{eqnarray} 
+Setting 
+
+\begin{eqnarray}
+\fictional{\bv{f}}&:=&\rho_{0}\:\dot{\bv{f}}-2\mu\:(\refgrad \cdot\bv{d}^{n})-(\refgrad \cdot\left[ \stackrel{(\star)}{\mathbb{G}}:(\nabla \bv{v})^{T}\right]),\nonumber\\
+\fictional{\bv{t}}&:=&\underline{\dot{\tilde{t}}}+2\mu\:\bv{n}_{0}\cdot\bv{d}^{n}+\bv{n}_{0}\cdot\left[ \stackrel{(\star)}{\mathbb{G}}:(\nabla \bv{v})^{T}\right],\nonumber
+\end{eqnarray} 
+we finally obtain for  $\bv{v}(\bv{X})$, $\bv{X}\in{\Omega_0}$
+
+\begin{eqnarray}
+\bv{v}(\bv{X})&=&\int_{\partial{\Omega_0}}\:\LameFundamentalSolution(\bv{X},\bv{Y})\cdot\fictional{\bv{t}}(\bv{Y})\;d \Gamma_{Y}-
+\int_{\partial{\Omega_0}}\:\cT_{n_Y} \LameFundamentalSolution(\bv{X},\bv{Y})\cdot\bv{v}(\bv{Y})\;d \Gamma_{Y}+\nonumber\\
+&&\int_{{\Omega_0}}\:\rho_{0}\:\LameFundamentalSolution(\bv{X},\bv{Y})\cdot\fictional{\bv{f}}(\bv{Y})\;d\Omega_{Y}.\label{dargesch}
+\end{eqnarray} 
+
+In the following we use various boundary integral operators acting on the vector valued functions e.g. the single layer potential
+\begin{equation}
+V \bv{t}(\bv{X}):=\int_{\partial{\Omega_0}}\:\LameFundamentalSolution\:(\bv{X},\bv{Y})\cdot\bv{t}(\bv{Y})\;d \Gamma_{Y},
+\end{equation} 
+the double layer potential 
+\begin{equation}
+K \bv{u}(\bv{X}):=\int_{\partial{\Omega_0}}\:\cT_{n_Y} \LameFundamentalSolution\:(\bv{X},\bv{Y})\cdot\bv{u}(\bv{Y})\;d \Gamma_{Y}
+\end{equation}  
+the adjoint double layer potential ´
+
+\begin{equation}
+K'\bv{t}(\bv{X}):=\cT_{n_X}\int_{\partial{\Omega_0}}\:\LameFundamentalSolution\:(\bv{X},\bv{Y})\cdot\bv{t}(\bv{Y})\;d \Gamma_{Y}\,,\qquad\qquad\bv{X}\in\partial{\Omega_0}
+\end{equation} 
+and the hyper singular operator 
+
+\begin{equation}
+W\bv{u}(\bv{X}):=-\cT_{n_X}\int_{\partial{\Omega_0}}\:\cT_{n_Y} \LameFundamentalSolution\:(\bv{X},\bv{Y})\cdot\bv{u}(\bv{Y})\;d \Gamma_{Y}\,,\qquad\bv{X}\in\partial{\Omega_0},
+\end{equation}  
+as well as the Newton potential 
+
+\begin{equation}
+N_{0} \bv{f}(\bv{X}):=\int_{{\Omega_0}}\:\LameFundamentalSolution\:(\bv{X},\bv{Y})\cdot\bv{f}(\bv{Y})\;d \bv{Y}.
+\end{equation} 
+
+
+With the integral operators we can now write for $\bv{v}(\bv{X})$, $\bv{X}\in{\Omega_0}$:
+\begin{equation}
+\bv{v}(\bv{X})= V\fictional{\bv{t}}(\bv{X})-
+K \bv{v}(\bv{X})+N_{0}\fictional{\bv{f}}(\bv{X}).\label{dargesch2} 
+\end{equation}  
+
+For  $\bv{X}\rightarrow\partial{\Omega_0}$ there holds together with the jump relations 
+\begin{equation}\label{hart:BoundaryTrace}
+\bv{v}(\bv{X})= V\fictional{\bv{t}}(\bv{X})-
+K \bv{v}(\bv{X})+\frac{1}{2}\:\bv{v}(\bv{X})+N_{0}\fictional{\bv{f}}(\bv{X})\,,\qquad\bv{X}\in\partial{\Omega_0}.
+\end{equation}  
+We derive a second boundary integral equation by applying the boundary traction operator $T$ on (\ref{dargesch2}):
+
+\begin{equation}\label{hart:BoundaryTraction}
+T\bv{v}(\bv{X})= K'\fictional{\bv{t}}(\bv{X})+
+W \bv{v}(\bv{X})+\frac{1}{2}\:\fictional{\bv{t}}(\bv{X})+N_{1}\fictional{\bv{f}}(\bv{X})\,,\qquad\bv{X}\in\partial{\Omega_0}.
+\end{equation} 
+In matrix-vector notation (\ref{hart:BoundaryTrace}), (\ref{hart:BoundaryTraction}) become
+\begin{equation*}
+\left( \begin{array}{c}
+\bv{v}\\
+T\bv{v}
+\end{array}\right) =
+\left(\begin{array}{cc}
+-K+\frac{1}{2}&V\\
+W&K'+\frac{1}{2}
+\end{array}
+\right) 
+\left(\begin{array}{c}
+\bv{v}\\
+\fictional{\bv{t}}
+\end{array}
+\right) +
+\left( \begin{array}{c}
+N_{0}\fictional{\bv{f}}\\
+N_{1}\fictional{\bv{f}}
+\end{array}
+\right) .
+\end{equation*}
+From the first equation we obtain for $\fictional{\bv{t}}$:
+
+\begin{equation*}
+\fictional{\bv{t}}=V^{-1}(K+\frac{1}{2})\bv{v}-V^{-1}N_{0}\fictional{\bv{f}}
+\end{equation*}
+and from the second equation $T\bv{v}$
+
+\begin{equation}
+T\bv{v}=W\bv{v}+(K'+\frac{1}{2})\fictional{\bv{t}}+N_{1}\fictional{\bv{f}}.\nonumber
+\end{equation}
+If one inserts $\fictional{\bv{t}}$ of the first equation into (\ref{hart:BoundaryTraction}), there holds 
+
+\begin{equation*}
+T\bv{v}=W\bv{v}+(K'+\frac{1}{2})V^{-1}(K+\frac{1}{2}\:)\bv{v}-(K'+\frac{1}{2})V^{-1}N_{0}\fictional{\bv{f}}+N_{1}\fictional{\bv{f}},
+\end{equation*}
+with the  Poincar\'e-Steklov operator
+\begin{equation}
+S:=W+(K'+\frac{1}{2})V^{-1}(K+\frac{1}{2}):\left[H^{1/2}(\partial{\Omega_0})\right]^{2}\rightarrow\left[H^{-1/2}(\partial{\Omega_0})\right]^{2}\nonumber
+\end{equation}
+we can write 
+\begin{equation}\nonumber
+T\bv{v}=S\bv{v}-(K'+\frac{1}{2})V^{-1}N_{0}\fictional{\bv{f}}+N_{1}\fictional{\bv{f}}
+\end{equation} 
+or
+\begin{equation}\nonumber
+S\bv{v}=T\bv{v}+(K'+\frac{1}{2})V^{-1}N_{0}\fictional{\bv{f}}-N_{1}\fictional{\bv{f}}\label{gl}.
+\end{equation} 
+Now we assume 
+
+\begin{equation}
+T\bv{v}\cong\underline{\dot{\tilde{t}}}=\bv{n}_{0}\cdot\dot{\bv{s}}\label{annahme}
+\end{equation} 
+and multiply the equation (\ref{gl}) with a test function  $ \bv{\eta}\in \left[ \tilde{H}^{1/2}(\partial{\Omega_{0_N}})\right] ^{2}$, and integrate over  $\partial{\Omega_{0_N}}$ and  assume equality in (\ref{annahme}), we obtain
+\begin{eqnarray}
+\langle S\bv{v}, \bv{\eta}\rangle _{\partial{\Omega_{0_N}}}=\langle \underline{\dot{\tilde{t}}}, \bv{\eta}\rangle_{\partial{\Omega_{0_N}}}+\langle (K'+\frac{1}{2})V^{-1}N_{0}\fictional{\bv{f}}, \bv{\eta}\rangle_{\partial{\Omega_{0_N}}}-\langle N_{1}\fictional{\bv{f}}, \bv{\eta}\rangle_{\partial{\Omega_{0_N}}}\nonumber\\
+ \qquad \textnormal{for all  }  \bv{\eta}\in \left[ \tilde{H}^{1/2}(\partial{\Omega_{0_N}})\right] ^{2}.\nonumber
+\end{eqnarray} 
+
+$ \langle \cdot,\cdot\rangle_{\partial{\Omega_{0_N}}} $ denotes the duality pairing between the trace space  $\left[ \tilde{H}^{1/2}(\partial{\Omega_{0_N}})\right] ^{2}$ and the dual space $\left[ H^{-1/2}(\partial{\Omega_{0_N}})\right] ^{2}$, which is defined by
+\begin{equation}
+\langle \bv{v},\bv{u}\rangle_{\partial{\Omega_{0_N}}}  := \int_{\partial{\Omega_0}_{t}}\bv{v}(\bv{x})\bv{u}(\bv{x})d \Gamma, \; \forall \bv{v} \in \left[ \tilde{H}^{1/2}(\partial{\Omega_{0_N}})\right] ^{2}, ~\bv{u} \in\left[ H^{-1/2}(\partial{\Omega_{0_N}})\right] ^{2}. \nonumber
+\end{equation}
+Now we look for  $\bv{v}\in \left[ H^{1/2}(\partial{\Omega_0})\right] ^{2}$ with
+\begin{eqnarray}
+\bv{v}&=&\given{\bv{v}} \qquad \textnormal{ for }\qquad \bv{Y}\in\partial{\Omega_{0_D}},\nonumber\\
+\dot{\tilde{\bv{t}}}&=&\given{\dot{\bv{t}}}\qquad \textnormal{ for }\qquad \bv{Y}\in\partial{\Omega_{0_N}}.\nonumber
+\end{eqnarray} 
+Let $\check{\bv{v}}\in \left[ H^{1/2}(\partial{\Omega_0})\right] ^{2}$ be an arbitrary but fixed extension of the Dirichlet data  $\given{\bv{v}}\in \left[ H^{1/2}(\partial{\Omega_0}_{v})\right] ^{2}$.
+
+Set $\underline{\bv{v}}:=\bv{v}-\check{\bv{v}}\in \left[ \tilde{H}^{1/2}(\partial{\Omega_0}_{t})\right] ^{2}$. 
+
+Then the weak formulation of our problem reads:
+
+Let $\check{\bv{v}}\in \left[ H^{1/2}(\partial{\Omega_0})\right] ^{2}$, $\given{\dot{\bv{t}}}\in \left[ H^{-1/2}(\partial{\Omega_0}_{t})\right] ^{2}$ and  $\given{\bv{f}}\in \left[ \tilde{H}^{-1}({\Omega_0})\right] ^{2}$ be given.
+
+find $\underline{\bv{v}}\in \left[\tilde{ H}^{1/2}(\partial{\Omega_0}_{t})\right] ^{2}$, such that \hspace{4pt} for all $ \bv{\eta}\in \left[ \tilde{H}^{1/2}(\partial{\Omega_0}_{t})\right]^{2}$
+\begin{equation}
+\langle S\underline{\bv{v}},\bv{\eta}\rangle_{\partial{\Omega_{0_N}}}=\langle \given{\dot{\bv{t}}}-S\check{\bv{v}}+(K'+\frac{1}{2})V^{-1}N_{0}\hat{\bv{f}}-N_{1}\hat{\bv{f}},\bv{\eta}\rangle_{\partial{\Omega_{0_N}}}.
+\end{equation} 
+Note that if the Dirichlet data are given than the coresponding rate of traction $\dot{\bv{t}}$ on the whole boundary   can be determined by solving the Dirichlet boundary value problem: 
+
+Let $\bv{v}\in \left[ H^{1/2}(\partial{\Omega_0})\right] ^{2}$ and $\given{\bv{f}}\in \left[ \tilde{H}^{-1}({\Omega_0})\right] ^{2}$ be given.
+\vspace{8pt}
+\newline
+Find  $\dot{\bv{t}}\in \left[ H^{-1/2}(\partial{\Omega_0})\right] ^{2}$, such that for all $ \bv{\psi}\in \left[ H^{-1/2}(\partial{\Omega_0})\right]^{2}$
+\begin{equation}
+\langle V\dot{\bv{t}},\bv{\psi}\rangle=\langle (K+\frac{1}{2})\bv{v},\bv{\psi}\rangle-\langle N_{0}\given{\bv{f}},\bv{\psi}\rangle.
+\end{equation} 
+
+
+
+\subsection{Discretization}
+Now we take a uniform discretization $\VolumePartition_{h}$ of the 2-dimensional domain ${\Omega_0}$, consisting of squares with maximal side-length $h$. Let the partitions $\BoundaryPartition^{D}_{h}$ and $\BoundaryPartition^{N}_{h}$ of the boundaries $\partial{\Omega_{0_D}}$, $\partial{\Omega_{0_N}}$ be induced by $\VolumePartition_{h}$. If one chooses finite dimensional subspaces of test and trial functions 
+
+
+
+\begin{itemize}
+\item $ \Hb_{h}^{-1/2}\subset\left[ H^{-1/2}(\partial{\Omega_0})\right] ^{2}$
+\begin{equation}\nonumber
+ \Hb_{h}^{-1/2}:=\left\lbrace \bv{\psi}_{h}\in \left[ L_{2}(\partial{\Omega_0})\right]^{2}\middle|~\forall \mathfrak{e}\in \VolumePartition_{h}:~ \bv{\psi}_{h}\vert_{\mathfrak{e}\cap\partial{\Omega_0}} \text{ vector valued, piecewise  constant\footnotemark }\right\rbrace, 
+\end{equation} 
+\footnotetext{On every subinterval $\tau$ from the discretization $\BoundaryPartition_{h}$ of boundary $\partial{\Omega_0}$ ´ : $\bv{\psi}_{h}\vert_{\tau}$ constant.}
+\item $ \Hb_{h}^{1/2}\subset\left[ H^{1/2}(\partial{\Omega_0})\right] ^{2}$
+\begin{equation}\nonumber
+\Hb_{h}^{1/2}:=\left\lbrace \bv{\eta}_{h}\in \left[ C^{0}(\partial{\Omega_0})\right] ^{2}\middle|~\forall \mathfrak{e}\in \VolumePartition_{h}:~ \bv{\eta}_{h}\vert_{\mathfrak{e}\cap\partial{\Omega_0}} \text{ vector valued, piecewise  linear\footnotemark }\right\rbrace, 
+\end{equation} 
+\footnotetext{On every subinterval $\tau$ from the discretization $\BoundaryPartition_{h}$ of boundary $\partial{\Omega_0}$ : $\bv{\eta}_{h}\vert_{\tau}$  linear.}
+\item $ \Hb_{h}^{-1}\subset \left[ \tilde{H}^{-1}({\Omega_0})\right] ^{2}$
+\begin{equation}\nonumber
+\Hb_{h}^{-1}:=\left\lbrace \bv{\phi}_{h}\in \left[ L_{2}({\Omega_0})\right] ^{2}\middle|~\forall \mathfrak{e}\in \VolumePartition_{h}:~\bv{\phi}_{h}\vert_{\mathfrak{e}} \textnormal{ vector valued,  piecewise } \textnormal{linear\footnotemark}\right\rbrace, 
+\end{equation} 
+\footnotetext{In every finite element $\nu$ from the discretization $\VolumePartition_{h}$  : $\bv{\phi}_{h}\vert_{\nu}$ bilinear (in quadrilateral) or linear (in triangle)}
+\end{itemize}
+and if one denotes with  $\Hb_{N,h}^{1/2} $ and $\Hb_{N,h}^{-1/2}$ the boundary  $\Hb_{h}^{1/2}\cap\left[ \tilde{H}^{1/2}(\partial{\Omega_{0_N}})\right] ^{2} $ and $\Hb_{h}^{-1/2}\cap\left[ H^{-1/2}(\partial{\Omega_{0_N}})\right] ^{2} $ respectively, then th Galerkin problem reads:
+
+Let $\given{\bv{v}}_{h}\in \Hb_{h}^{1/2}$, $\given{\dot{\bv{t}}}_{h}\in  \Hb_{N,h}^{-1/2}$ and $\given{\bv{f}}_{h}\in \Hb_{h}^{-1}$ be given.
+
+Find $\underline{\bv{v}}_{h}\in \Hb_{N,h}^{1/2}$, such that for all $\bv{\eta}_{h}\in \Hb_{N,h}^{1/2}$
+\begin{equation}
+\langle S\underline{\bv{v}}_{h},\bv{\eta}_{h}\rangle_{\partial{\Omega_{0_N}}}=\langle \given{\dot{\bv{t}}}_{h}-S\underline{\bv{v}}_{h}+(K'+\frac{1}{2})V^{-1}N_{0}\hat{\bv{f}}_{h}-N_{1}\given{\bv{f}}_{h},\bv{\eta}_{h}\rangle_{\partial{\Omega_{0_N}}}\label{gal1}
+\end{equation} 
+Afterwards the following discrete problem must be solved:
+
+Let $\bv{v}_{h}\in \Hb_{h}^{1/2}$ and $\hat{\bv{f}}_{h}\in \Hb_{h}^{-1}$ be given.
+
+Find $\hat{\bv{t}}_{h}\in  \Hb_{h}^{-1/2}$, such that for all $ \bv{\psi}_{h}\in \Hb_{h}^{-1/2}$
+\begin{equation}
+\langle V\hat{\bv{t}}_{h},\bv{\psi}_{h}\rangle=\langle (K+\frac{1}{2})\bv{v}_{h},\bv{\psi}_{h}\rangle-\langle N_{0}\hat{\bv{f}}_{h},\bv{\psi}_{h}\rangle. \label{gal2}
+\end{equation} 
+
+
+\subsection{Benchmarks}\label{sec:BEM:Benchmarks}
+We consider a quadratic plate  which is in plane strain and has side length 2 units, which is fixed on the top and a constant velocity $v_{y}=10^{-3} \text{in}/\text{s}$   is applied at its lower side in the whole time interval considered. During the deformation the lower edge can not become smaller in horizontal direction. It can be shown that in this example all components of the given boundary traction rate $\underline{\overline{\dot{t}}}$ remain zero during the whole deformation. A viscoplastic material law (Hart's modell) is assumed. The following initial values and material parameters are used for steel at a temperature at $400^{\circ}\text{C}\equiv 673\text{K}$. The linear system within each fix point step is solved using the Conjugate Gradient method with the diagonal preconditioner. In average we need 2-3 fix point iterations pro time step.
+
+\begin{longtable}{llc}
+\hline  
+material parameter & value & unit\\ 
+\hline  
+$\lambda$& $0.15$& -\\ 
+$M$& $7.8$& -\\ 
+$m$& $5$& -\\ 
+$\mathcal{M}$& $0.91\cdot10^{11}$& $\text{Pa}$\\ 
+$E$& $0.168\cdot10^{12}$& $\text{Pa}$\\ 
+$\nu$& $0.298$& -\\ 
+$\lambda_{0}$& $3.15$& $\text{s}^{-1}$\\ 
+$\sigma_{0}$& $0.689\cdot10^{8}$& $\text{Pa}$\\ 
+$\lambda_{sT}^{(\star)}$& $1.841\cdot10^{-28}$& $\text{Pa}^{-1}$\\ 
+$\sigma^{\star}_{s}$& $0.689\cdot10^{8}$& $\text{Pa}$\\ 
+$T_{B}$& $673$& K\\ 
+$\beta$& $0.123\cdot10^{10}$& $\text{Pa}$\\ 
+$\delta$& $1.33$& -\\ 
+\hline  
+\caption{Material data}
+\end{longtable} 
+\begin{comment}
+Where $\text{psi}$ - stands for  \textit{\textbf{p}ound-force per \textbf{s}quare \textbf{i}nch}  is a non-SI unit of pressure based on avoirdupois units. $1\text{ psi}=6,894.76\text{ Pa}$. $1\text{ ksi}=10^{3}\text{ psi}$.
+\end{comment}
+Numerical results of the simulations using  BE and FE methods are depicted in the Figures \ref{fig:Hart:BEM} and \ref{fig:Hart:FEM}. The BEM results correspond to the $30$ sec of real time simulation, whereas FEM for $50$ sec.
+
+The domain discretization is presented in the figures \ref{fig:Hart:BEM}.e and \ref{fig:Hart:FEM}.e  The BE discretization is done by the segmentation of the boundary $\partial \Omega$
+$16 \cdot 4$ intervals. The FE discretization is done by the decomposition of the domain $\Omega$ in
+$16 \cdot 16$ quadrilaterals. That corresponds to  30 BEM- und 255 FEM- degrees of freedom..
+On the figures \ref{fig:Hart:BEM}.a, \ref{fig:Hart:BEM}.b and \ref{fig:Hart:FEM}.a, \ref{fig:Hart:FEM}.b are depicted the coefficients  $d^n_{yy}(s^{-1})$ of the  rate-of-deformations tensor $d^n_{yy}(s^{-1})$ and $\sigma_{yy}$ of the Cauchy stress tensor $\bv{\sigma}$. One can clearly see that the $\sigma_{yy}$ reaches its maximum value at the corners of the plate. Consequently the non-elastic zone appears at corners and moved the center of the plate. This can be explained because of the jump of the boundary conditions at the corners form Dirichlet to Neumann.
+The components of the displacement  in $x$- respectively $y$-direction at the end of the simulation are represented on the figures \ref{fig:Hart:BEM}.a, \ref{fig:Hart:BEM}.b for BEM
+and \ref{fig:Hart:FEM}.a, \ref{fig:Hart:FEM}.b for FEM. They qualitatively  comply with expectations.The bottom edge of the plate is fixed in  $x$- directionand the  is shifted in $y$- direction by $0.03$ units  for BEM and by $0.05$ units for FEM. These values agree with the  given boundary data. On the distribution of the displacements on can see that the plate is tapered to the  center in the horizontal direction.
+
+\begin{figure}[h!]
+\begin{minipage}[c]{8cm} 
+\includegraphics[scale=0.3,angle=270]{\benchmarkTensileTest/stressxx_midpoint.fembem.8.ps}
+
+\caption{FEM-BEM comparison ($\sigma_{xx}$)}
+\end{minipage}
+\begin{minipage}[l]{8cm}
+\includegraphics[scale=0.3,angle=270]{\benchmarkTensileTest/stressyy_midpoint.fembem.8.ps}
+
+\caption{FEM-BEM comparison ($\sigma_{yy}$)}
+\end{minipage}
+
+\begin{minipage}[c]{8cm} 
+\includegraphics[scale=0.3,angle=270]{\benchmarkTensileTest/bem/stressdev_midpoint.elems.ps}
+
+\caption{Convergence of BEM approach}
+\end{minipage}
+\begin{minipage}[l]{8cm}
+\includegraphics[scale=0.3,angle=270]{\benchmarkTensileTest/fem/stressdev_midpoint.elems.ps}
+
+\caption{Convergence of FEM approach}
+\end{minipage}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[h!]
+\begin{minipage}[l]{7cm}
+\includegraphics[scale=0.5]{\benchmarkTensileTest/fem/epyy.16.50.eps}
+
+a. $d^n_{yy}(s^{-1})$
+\end{minipage}
+\begin{minipage}[r]{7cm}  
+ \includegraphics[scale=0.5]{\benchmarkTensileTest/fem/stressyy.16.50.eps}
+
+b. $\sigma_{yy}(psi)$
+\end{minipage}
+\begin{minipage}[l]{7cm}  
+ \includegraphics[scale=0.5]{\benchmarkTensileTest/fem/verschx.16.50.eps}
+
+c. $u_x(in)$
+\end{minipage}
+\begin{minipage}[r]{7cm}  
+ \includegraphics[scale=0.5]{\benchmarkTensileTest/fem/verschy.16.50.eps}
+
+d. $u_y(in)$
+\end{minipage}
+\begin{minipage}[l]{8.5cm}  
+\includegraphics[scale=0.5]{\benchmarkTensileTest/fem/versch.16.50.eps}
+
+e. deformed mesh
+\end{minipage}
+\begin{minipage}[r]{7cm}  
+\includegraphics[scale=0.5]{\benchmarkTensileTest/fem/stressdev.16.50.eps}
+
+ f. $\|\dev \sigma\|(psi)$ \\
+\end{minipage}
+\caption{FEM (after 50 second simulation )}\label{fig:Hart:FEM}
+\end{figure} 
+
+\clearpage
+\begin{figure}[h!]
+\begin{minipage}[l]{7cm}
+ \includegraphics[scale=0.5]{\benchmarkTensileTest/bem/epyy.16.30.eps}
+
+a. $d^n_{yy}(s^{-1})$
+\end{minipage}
+\begin{minipage}[l]{7cm}  
+ \includegraphics[scale=0.5]{\benchmarkTensileTest/bem/stressyy.16.30.eps}
+
+b. $\sigma_{yy}(psi)$
+\end{minipage}
+\begin{minipage}[l]{7cm}  
+ \includegraphics[scale=0.5]{\benchmarkTensileTest/bem/verschx.16.30.eps}
+
+c. $u_x(in)$
+\end{minipage}
+\begin{minipage}[l]{7cm}  
+ \includegraphics[scale=0.5]{\benchmarkTensileTest/bem/verschy.16.30.eps}
+
+d. $u_y(in)$
+\end{minipage}
+\begin{minipage}[l]{8.5cm}  
+ \includegraphics[scale=0.5]{\benchmarkTensileTest/bem/versch.deformedmesh.16.30.eps}
+
+e. deformed mesh
+\end{minipage}
+\begin{minipage}[l]{7cm}  
+ \includegraphics[scale=0.5]{\benchmarkTensileTest/bem/stressdev.16.30.eps}
+
+f. $\|\dev \sigma\|(psi)$
+\end{minipage}
+\caption{BEM (after 30 second simulation )}\label{fig:Hart:BEM}
+\end{figure} 
+
+\subsection{Implementation}
+The figure \ref{fl1} shows our boundary element program, realized within the program package \textit{maiprogs}
+\begin{small}\begin{figure}[h!]
+\begin{psmatrix}[rowsep=0.4,colsep=-0.5]
+     &\psovalbox{
+	\begin{tabular}{c}
+	Set $t=t_{0}$,
+%	initialisiere viskoplastische Variablen\\
+	$^{t}\bv{\e}^{a}=\underline{\underline{0}}$, $^{t}\sigma^{\star}=17\;\text{ksi}$, $^{t}\bv{d}^{n}=\underline{\underline{0}}$
+	\end{tabular}
+	} \\
+ &\\
+     &\psovalbox{
+	\begin{tabular}{c}
+	Set  $\Omega_0=\Omega_{t}$ and
+	$^{t}\bv{v}^{0}_{\Omega_0}=\underline{0}$
+	\end{tabular}
+	} \\
+&\\
+     &\psframebox{
+	\begin{tabular}{c}
+	Compute\\
+	$\fictional{\bv{f}}^{\:(k+1)}_{\:\tilde{\mathcal{B}}}=\rho_{0}\:\given{\dot{\bv{f}}}-2\mu\:(\refgrad \cdot\bv{d}^{n})-\refgrad \cdot[ \stackrel{(\star)}{\mathbb{G}}:(\refgrad\circ$ $
+	^{t}\bv{v}^{\:(k)}_{\Omega_0})]$
+	\end{tabular}
+    } \\
+   & \psframebox{
+	\begin{tabular}{c}
+	Compute\\
+	$\bv{F}^{\:(k+1)}= \underline{\overline{\dot{t}}}-S\hat{\bv{v}}+(K'+\frac{1}{2})V^{-1}N_{0}\fictional{\bv{f}}^{\:(k+1)}_{\Omega_0}-N_{1}\fictional{\bv{f}}^{\:(k+1)}_{\Omega_0}$
+	\end{tabular}
+    } \\
+   & \psframebox{
+	\begin{tabular}{c}
+	Solve
+	$\langle S\underline{\bv{v}}^{\:(k+1)}_{\partial{\Omega_{0_N}}},\bv{\eta}\rangle_{\partial{\Omega_{0_N}}}=\langle \bv{F}^{\:(k+1)},\bv{\eta}\rangle_{\partial{\Omega_{0_N}}}$\\
+	$\Downarrow$\\
+	$\bv{v}^{\:(k+1)}_{\:\partial{\Omega_0}}=\hat{\bv{v}}+\underline{\bv{v}}^{(k+1)}_{\partial{\Omega_{0_N}}}$
+	\end{tabular}
+    } \\
+    & \psframebox{
+	\begin{tabular}{c}
+	Solve
+	$\langle V\fictional{\bv{t}}^{\:(k+1)}_{\:\partial{\Omega_0}},\bv{\psi}\rangle_{\partial{\Omega_0}}=\langle (K+\frac{1}{2})\bv{v}^{\:(k+1)}_{\:\partial{\Omega_0}},\bv{\psi}\rangle_{\partial{\Omega_0}}-\langle N_{0}\fictional{\bv{f}}^{\:(k+1)}_{\Omega_0},\bv{\psi}\rangle_{\partial{\Omega_0}}$\\
+	$\Downarrow$\\
+	$\fictional{\bv{t}}^{(k+1)}_{\partial{\Omega_0}}$
+	\end{tabular}
+    } \\
+   & \psframebox{
+	\begin{tabular}{c}
+	Compute %$\bv{v}^{\:(k+1)}_{\:\partial{\Omega_0}},\quad\hat{\bv{t}}^{\:(k+1)}_{\:\partial{\Omega_0}}\textnormal{ und }\hat{\bv{f}}^{\:(k+1)}_{\:\tilde{\mathcal{B}}}$\\
+	with the representation formula\\
+	$^{t}\bv{v}^{\:(k+1)}_{{\Omega_0}}$
+	\end{tabular}
+    } \\
+     & \psdiabox{
+	$\|^{t}\bv{v}^{(k+1)}_{\Omega_0}-$ $^{t}\bv{v}^{(k)}_{\Omega_0}\|\leq TOL$
+	}&       \psframebox{	\begin{tabular}{c}Set\\ $k=k+1$\end{tabular}} \\
+     &\psframebox{
+	\begin{tabular}{c}
+	Compute\\
+	$^{t+\Delta t}\bv{u}_{{\Omega_0}}$, $^{t+\Delta t}\bv{\sigma}_{{\Omega_0}}$, $^{t+\Delta t}\bv{\e}^{a}_{{\Omega_0}}$, $^{t+\Delta t}\sigma^{\star}_{{\Omega_0}}$, $^{t+\Delta t}\bv{d}^{n}_{{\Omega_0}}$
+	\end{tabular}
+	} \\
+& \psframebox{
+	\begin{tabular}{c}
+	Perform Lagrangian Update \\ $\Omega_{t+\Delta t}:= \Omega_0 + {}^{t+\Delta t}\!\bv{u}_{{\Omega_0}}$
+	\end{tabular}
+	} & \\
+          \psframebox{\begin{tabular}{c}Set\\$t=t+\Delta t$ \end{tabular}} & 
+	\psdiabox{
+	$t=T$
+	}&\psovalbox[fillstyle=solid]{Stop}\\
+%    \psovalbox[fillstyle=solid]{End}
+    % Links
+    \ncline{->}{1,2}{3,2}
+    \ncline{->}{3,2}{5,2}
+    \ncline{->}{5,2}{6,2}
+    \ncline{->}{6,2}{7,2}
+    \ncline{->}{7,2}{8,2}
+    \ncline{->}{8,2}{9,2}
+    \ncline{->}{9,2}{10,2}
+    \ncline{->}{10,2}{10,3}\aput{:U}{No}
+    \ncline{->}{10,2}{11,2}\bput{:L}{Yes}
+    \ncbar[angleA=90,armB=0,nodesepB=0]{->}{10,3}{4,2}
+    \ncline{->}{11,2}{12,2}
+    \ncline{->}{12,2}{13,2}
+    \ncline{<-}{13,1}{13,2}\aput{:U}{No}
+    \ncbar[angleA=90,armB=0,nodesepB=0]{->}{13,1}{2,2}
+    \ncline{->}{13,2}{13,3}\aput{:U}{Yes}
+%    \ncline{->}{1,1}{2,1}
+%    \ncline{->}{2,1}{3,1}
+%    \ncline{->}{3,1}{4,1}
+%    \ncline{->}{4,1}{5,1}<{{No}}
+%    \ncline{->}{5,1}{7,1}
+ %   \ncline{->}{7,1}{8,1}
+%    \ncline{->}{4,1}{4,2}^{{Yes}}
+ %   \ncline{->}{4,2}{4,3}
+%    \ncbar[angleA=-90,armB=0,nodesepB=0.25]{->}{4,3}{5,1}
+\end{psmatrix}
+\parbox{12.5cm}{\caption{\label{fl1}Flow chart. BEM discretization}}
+\end{figure}    %
+\end{small}
+
+% \thispagestyle{empty}
+% \unitlength=1truemm%  
+
+The BEM program consists of two nested loops. The outer loop corresponds to the time discretization and stops when the final time of simulation is obtained. Within the interior loop ${}^{t}\bv{v}_{\tilde{\mathcal{B}}}$ is computed iteratively. The linear system (\ref{gal1}) is solved using the  Conjugate Gradient method yielding ${}^{t}\bv{v}^{(k+1)}_{\partial \tilde{\mathcal{B}}_t}$. Since for the discrete Poincr\'e-Steklov operator the matrix $V^{-1}$ was already used and therefore stored, it is now in our disposal. In order to compute $\hat{\bv{t}}^{(k+1)}_{\partial \tilde{\mathcal{B}}}$ we therefore  do not need to solve system  (\ref{gal2}) but only to perform a matrix vector multiplication. When ${}^{t}\bv{v}^{(k+1)}_{\partial \tilde{\mathcal{B}}_N}$ and $\hat{\bv{t}}^{(k+1)}_{\partial \tilde{\mathcal{B}}}$ are known  ${}^{t}\bv{v}^{(k+1)}_{\tilde{\mathcal{B}}}$ can be computed using the representation formula (\ref{dargesch}). With known ${}^{t}\bv{v}^{(k+1)}_{\tilde{\mathcal{B}}}$ we can compute $\given{\bv{f}}^{(k+1)}_{\tilde{\mathcal{B}}}$ as shown in the flow chart. With this new right hand side one restarts the loop as documented. After the inner loop was completed and ${}^{t}\bv{v}_{\tilde{\mathcal{B}}}$ is known then the actual state  at time step $t_{n+1}$ i.e. $\{\bv{\sigma}_{n+1},\bv{d}^n_{n+1},\bv{\e}^a_{n+1},\bv{\sigma}^{*}_{n+1}\}$ in $\tilde{\mathcal{B}}$, is computed by local integration of the constitutive equations. Afterwards $\stackrel{(\star)}{\mathbb{G}}_{\tilde{\mathcal{B}}}$ and $\bv{u}_{\tilde{\mathcal{B}}}$ which are used for the right hand side and the Galerkin system and for the Lagrangian update procedure respectively. 
+
+\clearpage
+\subsection{Discretization with  finite elements}
+
+\begin{small}\begin{figure}[h!]
+\begin{psmatrix}[rowsep=0.4,colsep=-0.5]
+     \psovalbox{
+	\begin{tabular}{c}
+	Set $t=t_{0}$ and\\
+	initialize viscoplastic variables\\
+	$^{t}\bv{\e}^{a}=\underline{\underline{0}}$, $^{t}\sigma^{\star}=17\;\text{ksi}$, $^{t}\bv{d}^{n}=\underline{\underline{0}}$
+	\end{tabular}
+	} \\
+ \\
+     \psovalbox{
+	\begin{tabular}{c}
+	Set  $\Omega_0=\Omega_{t}$
+	\end{tabular}
+	} \\
+    \psframebox{
+	\begin{tabular}{c}
+	Compute \\
+	$^{t}\bv{F}= \int_{{\Omega_0}}\:\rho_{0}\:\dot{\bv{f}}\cdot\bv{\eta}\;d\Omega+
+\int_{\partial{\Omega_{0_N}}}\:\underline{\overline{\dot{t}}}\cdot\bv{\eta}\;d \Gamma+
+\int_{{\Omega_0}}\:(\refgrad \circ\bv{\eta}):\mathbb{C}:$ $^{t}\bv{d}^{n}_{\:{\Omega_0}}\;d\Omega+$ \\
+$\int_{{\Omega_0}}\:(\refgrad \circ\bv{\eta}):\mathbb{C}:(\refgrad \circ$ ${}^{t}\check{\bv{v}}_{\Omega_{0}})\;d\Omega-\int_{{\Omega_0}}\:(\refgrad \circ\bv{\eta}):$ $\stackrel{(\star)}{^{t}\mathbb{G}}_{{\Omega_0}}:(\refgrad \circ$ ${}^{t}\check{\bv{v}}_{\Omega_{0}})\;d\Omega$
+	\end{tabular}
+    } \\
+    \psframebox{
+	\begin{tabular}{c}
+	Compute from $^{t}\bv{\sigma}_{\:{\Omega_0}}$\\
+	$\stackrel{(\star)}{^{t}\mathbb{G}}_{{\Omega_0}}$
+	\end{tabular}
+    } \\
+     \psframebox{
+	\begin{tabular}{c}
+	Solve\\
+	$\int_{{\Omega_0}}\:(\refgrad \circ\bv{\eta}):\mathbb{C}:(\refgrad \circ$ ${}^{t}\underline{\bv{v}}_{\Omega_{0}})\;d\Omega-\int_{{\Omega_0}}\:(\refgrad \circ\bv{\eta}):$ $\stackrel{(\star)}{^{t}\mathbb{G}}_{{\Omega_0}}:(\refgrad \circ$ ${}^{t}\underline{\bv{v}}_{\Omega_{0}})\;d\Omega=$ $^{t}\bv{F}$\\
+	$\Downarrow$\\
+	$^{t}\bv{v}_{\:\tilde{\mathcal{B}}}$
+	\end{tabular}
+    }  \\
+    \psframebox{
+	\begin{tabular}{c}
+Compute \\ ${}^{t}\bv{v}_{\Omega_0}={}^{t}\check{\bv{v}}+{}^{t}\underline{\bv{v}}_{\Omega_{0}}$
+	\end{tabular}
+    }\\
+    \psframebox{
+	\begin{tabular}{c}
+	Compute\\
+	$^{t+\Delta t}\bv{u}_{\:\tilde{\mathcal{B}}}$, $^{t+\Delta t}\bv{\sigma}_{\:\mathcal{B}}$, $^{t+\Delta t}\bv{\e}^{a}_{\:\mathcal{B}}$, $^{t+\Delta t}\sigma^{\star}_{\:\mathcal{B}}$, $^{t+\Delta t}\bv{d}^{n}_{\:\mathcal{B}}$
+	\end{tabular}
+	} \\
+	\psdiabox{
+	$t=T$
+	}&          \psframebox{\begin{tabular}{c}Set\\$t=t+\Delta t$ \end{tabular}} \\
+\psovalbox[fillstyle=solid]{Stop}
+    \ncline{->}{1,1}{3,1}
+    \ncline{->}{3,1}{4,1}
+    \ncline{->}{4,1}{5,1}
+    \ncline{->}{5,1}{6,1}
+    \ncline{->}{6,1}{7,1}
+    \ncline{->}{7,1}{8,1}
+    \ncline{->}{8,1}{9,1}
+    \ncline{->}{9,1}{9,2}\aput{:U}{No}
+    \ncline{->}{9,1}{10,1}\bput{:L}{Yes}
+     \ncbar[angleA=90,armB=0,nodesepB=0]{->}{9,2}{2,1}
+    \ncline{->}{13,2}{13,3}
+\end{psmatrix}
+\caption{Flow chart. FEM discretization}
+\end{figure}    %
+\end{small}
+
+
+
+
+% \nocite{Steinbach03}
+% \nocite{SiHu98}
+% \nocite{Fung65}
+% \nocite{MaHu83}
+% \nocite{KoWi99}
+
+
+\section{Boundary element and finite element procedures for metal chipping}\label{sec:FEMBEM_HyperElasto_VP}
+% \begin{abstract}
+We present  finite element/boundary element procedure for  vicoplastic-thermomechanical problems and coupled thermoelastic formulation for contact problems. We consider a 2-body problem with a linear elastic worktool and viscoplastic workpiece. We allow  large deformations and consider an initial boundary value problem for  velocity and temperature. The viscoplastic material law under consideration is Hart's modell. The mechanical equation and the heat conduction equation are solved by staggered iteration. We discretize the mechanical contact equation by finite elements for the viscoplastic material and by boundary elements for the elastic worktool. The heat conduction equation is discretized using backward Euler in time and finite elements in space. Time stepping procedure together with Lagrangian update  is performed which takes care of the change of configuration. 
+% \end{abstract}
+
+
+\subsection{Viscoplastic thermomechanical coupling}
+We consider the following initial boundary value problem for  velocity and temperature. Let $\bv{u}^i(0,\bv{X})$ denote the initial displacement, $\bv{v}^{i}(0,\bv{X})$  the initial velocity and $\Theta^i(0,\bv{X})$ the initial temperature (i=1,2). Then we look for $\bv{v}^{\sl}\in\Hb^{1}(\Omega_t^{\sl}) $, $\bv{v}^{\ms} \in\Hb^{1/2}(\Gamma^{\ms}_t:=\Gamma^{\ms}_{tN}\cup\Gamma^{\ms}_{tC})$, $\Theta:=(\Theta^{\sl},\Theta^{\ms})\in H^{1}(\Omega_t:=(\Omega_t^{\sl},\Omega_t^{\ms}))$, $0\leq t \leq T $~
+
+\begin{equation}\label{WeakMech}
+\begin{array}{c}
+\begin{array}{l}
+\displaystyle\hspace{-2.0cm}\Int_{\Omega_t^{\sl}}(\nabla \bv{v}^{\sl}):\C:(\nabla \bv{\eta}^{\sl}) - \Int_{\Omega_t^{\sl}}(\nabla \bv{v}^{\sl}): \,\stackrel{(*)}{\G}\!{}^T\!(\bv{\sigma^{\sl}}):(\nabla \bv{\eta}^{\sl})+\left\langle S \bv{v}^{\ms},\bv{\eta}^{\ms}\right\rangle_{\Gamma^{\ms}_t} 
+\end{array}
+  \\ [2ex]
+\begin{array}{r}
+\displaystyle\hspace{0.5cm}+\left\langle\dot{\bv{t}}_{C} (\bv{v}^{\sl},\bv{v}^{\ms}), \bv{\eta}^{\sl \ms}\right\rangle_{\Gamma^{\sl}_{tC}}
+-\Int_{\Omega_t^{\sl}} \bv{d}^n : \C : \nabla \bv{\eta}^{\sl} =0,
+\end{array}
+\end{array}
+\end{equation}
+
+\begin{equation}\label{WeakHeat}
+\begin{array}{c}
+\begin{array}{l}
+ \displaystyle\hspace{-0.5cm}\Int_{\Omega_t}\left[\frac{\partial \Theta}{\partial t} \vartheta  +\varkappa  \nabla \Theta\nabla \vartheta\right]    -\gamma_{12} \Int_{\Gamma_{tC}^{\sl}}\bv{t}_{C}\cdot \bv{n}^{\ms} \Theta^{\ms \sl}\vartheta^{\ms \sl} - \Int_{\Gamma^{\sl}_{tC}}\mu_f~ \bv{t}_{C}\cdot \bv{n}^{\ms} \left| \bv{v}^{\ms \sl}_{\ct}\right|\left(\gamma_{1}\vartheta^{\sl}+\gamma_{2}\vartheta^{\ms}\right)=0
+\end{array}
+\end{array}
+\end{equation}
+with $\bv{\eta}^{\sl}$  in $\Omega_t^{\sl}$,  $\bv{\eta}^{\ms}$ on $\Gamma_t^{\ms}$, $\vartheta$ in  $\Omega_t$, $\varkappa:=\frac{k}{\rho c}$, $\rho$ - density, $c$ - heat  capacity, $k$ - heat conductivity.   In the contact term on $\Gamma^{\sl}_{tC}$ $\dot{\bv{t}_{C}}=\dfrac{\partial \bv{t}_{C}}{\partial \bv{u}} \bv{v}$ denotes the rate of the boundary traction. $\bv{d}^n$  describes the viscoplasticity, $\mu_f$ is the friction coefficient and the boundary integral operator $S$ is the Steklov-Poincare operator of linear elasticity. With $\Theta^{\ms \sl}$ and  $\bv{\eta}^{\ms \sl}$ we denote the jump of the temperature and displacement between the two bodies respectively. $\bv{n}^{\ms}$ is the exterior for $\Omega^{\ms}_t$.
+
+Next we discretize the system  (\ref{WeakMech})-(\ref{WeakHeat}) by using finite elements and boundary elements in space and finite differences in time. We discretize the velocity in the work peace with finite elements and in the work tool with boundary elements whereas the temperature is in both bodies discretized by finite elements. At each time step $k=1,\ldots,N$ we look for a continuous piecewise linear function  $\bv{v}^{\sl}_{kh}$ in $\Omega^{\sl}_{t_{k-1}}$ and a  continuous piecewise linear function $\bv{v}^{\ms}_{kh}$ on $\Gamma^{\ms}_{t_{k-1}}$ and continuous piecewise linear function $\Theta_{hk}$ in $\Omega_{t_{k-1}}$ satisfying
+
+\begin{equation}\label{DiscrWeakMech}
+\begin{array}{c}
+\begin{array}{l}
+\displaystyle\Int_{\Omega_{t_{k-1}}^{\sl}}(\nabla \bv{v}_{kh}^{\sl}):\C:(\nabla \bv{\eta}_h^{\sl}) - \Int_{\Omega_{t_{k-1}}^{\sl}}(\nabla \bv{v}_{kh}^{\sl}): \,\stackrel{(*)}{G}\!{}^T\!(\bv{\sigma}_{{k-1}h}):(\nabla \bv{\eta}_h^{\sl})+\left\langle S \bv{v}_{kh}^{\ms},\bv{\eta}_h^{\ms}\right\rangle_{\Gamma^{\ms}_{t_{k-1}}} 
+\end{array}
+  \\ [2ex]
+\begin{array}{r}
+\displaystyle+\left\langle\dot{\bv{t}}_{C_{kh}} (\bv{v}_{kh}^{\sl},\bv{v}_{kh}^{\ms}), \bv{\eta}_h^{\sl \ms}\right\rangle_{\Gamma^{\sl}_{t_{k-1}C}}
+=\Int_{\Omega_{t_{k-1}}^{\sl}}\bv{d}_{k-1h}^{(n)}  : \C : \nabla \bv{\eta}_h^{\sl},
+\end{array}
+\end{array}
+\end{equation}
+
+\begin{equation}\label{DiscrWeakHeat}
+\begin{array}{c}
+\begin{array}{l}
+\displaystyle\Int_{\Omega_{t_{k-1}}}\left[\frac{\Theta_{kh}-\Theta_{k-1,h}}{\Delta t} \vartheta_h  +\varkappa \nabla \Theta_{kh} \nabla \vartheta_h \right] -\gamma_{12}\Int_{\Gamma_{t_{k-1}C}^{\sl}}\bv{t}_{C_{kh}}\cdot\bv{n}^{\ms}[\Theta_{kh}][\vartheta_{h}],
+\end{array}
+ \\[2ex]
+\begin{array}{r}
+\displaystyle= \Int_{\Gamma^{\sl}_{t_{k-1}C}}\mu_f \bv{t}_{C_{kh}}\cdot\bv{n}^{\ms} \left| \bv{v}^{\ms \sl}_{kh_{\ct}}\right|\left(\gamma_1\vartheta_h^{\sl}+\gamma_2\vartheta_h^{\ms}\right)
+\end{array}\mbox{\hspace*{1cm}(backward Euler)}
+\end{array}
+\end{equation}
+with test functions   $ \bv{\eta}_h^{\sl}$ in $\Omega_{t_{k-1}}^{\sl}$\quad $ \bv{\eta}_h^{\ms}$ on $\Gamma^{\ms}_{t_{k-1}}$ and  $\vartheta_h$ in $\Omega_{t_{k-1}}$.
+% \hspace*{1cm}
+% \begin{minipage}[b]{15cm}
+We solve the above discretization (\ref{DiscrWeakMech}), (\ref{DiscrWeakHeat}) with a staggered iteration as follows (see also \cite{MuChaDBE3}):
+
+Start with $\bv{u}^i(0,\bv{X})$, $\bv{v}^{i}(0,\bv{X})$, $\Theta(0,\bv{X})$ and initial configuration $\Omega_0^i$, for   $k=1,\ldots,N$ do~:
+
+\begin{minipage}[b]{17cm}
+\begin{enumerate}
+\item 
+\begin{minipage}[l]{10cm}
+%  \vspace*{-0.5cm}
+\begin{eqnarray}\nonumber
+\mbox{use }(\ref{DiscrWeakMech})  & \mbox{ to compute }& \bv{v}^{\sl}_{kh} \mbox{ in }\Omega^{\sl}_{t_{k-1}},  \bv{v}^{\ms}_{kh} \mbox{ on }\Gamma^{\ms}_{t_{k-1}},
+\\
+\mbox{use }(\ref{DiscrWeakHeat})  &\mbox{ to compute }&\Theta_{kh}\mbox{ in } \Omega^{\sl}_{t_{k-1}}\cup\Omega^{\ms}_{t_{k-1}}.\nonumber
+\end{eqnarray}
+\end{minipage}
+\item apply the Lagrangian update, $\bv{u}^i_{kh}:=\bv{v}^{i}_{kh}\Delta t$.
+\begin{equation}\nonumber
+\begin{array}{ll}
+\Omega^i_{t_{k-1}}\mbox{ map }  \Omega^i_{t_{k}} &\mbox{ by setting }  \bv{x}_k^i=\bv{x}^i_{k-1}+\bv{x}^i_{kh}, \\
+\Gamma^{\ms}_{t_{k-1}}\mbox{ map into }  \Gamma^{\ms}_{t_{k}} &\mbox{  with } \bv{x}_k^{\ms}=\bv{x}^{\ms}_{k-1}+\bv{u}^{\ms}_{kh}. \\
+\end{array}
+\end{equation}
+\item {} update  $\bv{\sigma}_{k-1,h}$ using Hart's model constitutive equations: \\  \begin{equation}\nonumber
+\bv{\sigma}^{\sl}_{k-1,h}\stackrel{\bv{v}^{\sl}_{kh},~\Theta_{kh}}{\rotatebox{0}{|}\!\!\!\!\longrightarrow}\bv{\sigma}^{\sl}_{kh}.
+\end{equation}
+
+\item return to 1.
+\end{enumerate}
+\end{minipage}
+
+\begin{figure}
+\begin{center}
+\begin{minipage}[c]{8.5cm}
+\resizebox{8.5cm}{!}{\includegraphics*{/home/gein/Documents/tex/SPP1180/Kolloquium.7_8.Juni/geometry.k.scale.[thesis].eps}}
+\caption{Model problem}\label{fig:MetalChipingModelProblem}
+\end{minipage}
+\end{center}
+\end{figure}
+
+In order to solve the contact problem  (normal/tangential parts) we apply a penalty method introduced in Section \ref{sec:ElPlContact:DiscretizationSolutionProcedure} and linearized in Section \ref{sec:ConstitutiveConditions:Discretization} with penalty  parameters  $\epsilon_{\ct}$, $\epsilon_{\cn}$ and a gap function Gap - $g_k$.
+
+\begin{equation}\label{DotP}
+\left\langle\dot{\bv{t}}_{kh_{C}} (\bv{v}_{kh}^{\sl},\bv{v}_{kh}^{\ms}), [\bv{\eta}_h]\right\rangle_{\Gamma^{\sl}_{C}}=\frac{1}{\epsilon_{\cn}}\Int_{\Gamma^{\sl}_{C}} [\bv{v}_{kh}]^{(+)}_N[\bv{\eta}_h]_N+
+\left\{
+\begin{array}{lc}
+\displaystyle\frac{1}{\epsilon_{\ct}}\Int_{\Gamma^{\sl}_{C}} [\bv{v}_{kh}]_{\tau} [\bv{\eta}_h]_{\ct}& \mbox{stick}\\[7ex]
+\displaystyle\frac{\mu}{\epsilon_{\cn}}\Int_{\Gamma^{\sl}_{C}} [\bv{v}_{kh}]_{N} [\bv{\eta}_h]_{\ct}& \mbox{slip}
+\end{array}
+\right.
+\end{equation}
+
+\begin{equation}\nonumber
+[\bv{v}_{kh}]^{(+)}_{\cn}:=
+\left\{
+\begin{array}{cc}
+[\bv{v}_{kh}]_{\cn}, & \mbox{ if }0>g_{k-1}, \\
+0, &\mbox{ if } 0\leq g_{k-1}. \\
+\end{array}
+\right.
+\end{equation}
+Hence, the discrete solution of problem  ( \ref{DiscrWeakMech}, \ref{DiscrWeakHeat}) depends on the discretization parameters $h$, $\Delta t$, $\epsilon_{\cn}$, $\epsilon_{\ct}$. The optimal choice for the parameters is an open question, an indication for it can only be obtained by a series of numerical simulation. These simulations are obtained by inserting the expression  (\ref{DotP}) into the discretization  (\ref{DiscrWeakMech}) yields a linear system for $\bv{v}^{i}_{kh}$. Note that the term $\stackrel{(*)}{\G}\!\!{}^T\!(\bv{\sigma}_{{k-1}h})$ is explicitly computed with Hart's modell at the former time step. 
+
+Next, we introduce Hart's modell with viscoplastic interior variables \cite{DonigaDipl05}. 
+
+
+
+\begin{minipage}[c]{13cm}
+\begin{itemize}
+\item It uses the strain rate $\bv{d}^{(n)}_{k-1}$ and the velocity gradient $\bv{d}^{(e)}_{k}:=\nabla^{sym} \bv{v}_{k}-\bv{d}^{(n)}_{k-1}$
+\item Hart's modell describes hypoelastic material law $\displaystyle\jaum{\bv{\sigma}}_{k}:=\C:\bv{d}^{(e)}_k=\C:(\nabla^{sym} \bv{v}_{k}-\bv{d}^{(n)}_{k-1})\Longrightarrow \bv{\sigma}_{k}\Longrightarrow \bv{\sigma}'_{k}$
+
+\item 
+\begin{equation*}
+\left.
+\begin{array}{rcl}
+\displaystyle\jaum{\bv{\e}}{}^{a}_{k}
+&:=&\bv{d}^{(n)}_{k-1}-\sqrt{\frac{3}{2}}\lambda^{(\star)}_{k-1}\left[\ln\left( \frac{\sigma^{\star}_{k-1}}{\sqrt{\frac{2}{3}}\mathcal{M}\|\bv{\e}^{a}_{k-1}\|}\right)  \right]^{-1/\lambda}\frac{\bv{\e}^{a}_{k-1}}{\|\bv{\e}^{a}_{k-1}\|}
+\\
+\displaystyle\dot{\sigma}^{\star}_{k}&:=&\sigma^{\star}_{k-1}\lambda^{(\star)}_{k-1}\left[\ln\left( \frac{\sigma^{\star}_{k-1}}{\sqrt{\frac{2}{3}}\mathcal{M}\vert\vert\bv{\e}^{a}_{k-1}\vert\vert}\right)  \right]^{-1/\lambda}\left( \frac{\beta}{\sigma^{\star}_{k-1}}\right) ^{\delta}\left(\frac{\sqrt{\frac{2}{3}}\mathcal{M}\|\bv{\e}^{a}_{k-1}\|}{\sigma^{\star}_{k-1}} \right) ^{\beta/\sigma^{\star}_{k-1}}
+\end{array}
+\right\}
+\Rightarrow \bv{\e}^{a}_{k}, \sigma^{\star}_{k}
+\end{equation*} 
+
+\item
+\begin{equation*}
+\hspace*{-25mm}\bv{d}^{(n)}_{k}
+:=\frac{\lambda_{0}}{(\sigma_{0})^{M}}\left( \sqrt{\frac{3}{2}}\right)^{M+1} \|\bv{\sigma}'_{k}-\frac{2}{3}\mathcal{M}\cdot\bv{\e}^{a}_{k}\|^{M-1}\left( \bv{\sigma}'_{k}-\frac{2}{3}\mathcal{M}\bv{\e}^{a}_{k}\right),\nonumber
+\end{equation*} 
+
+\end{itemize}
+where
+
+\begin{eqnarray}\lambda^{(\star)}_{k-1}&:=&\lambda_{sT}^{(\star)}\cdot\left( \frac{\sigma^{\star}_{k-1}}{\sigma_{s}^{\star}}\right)^{m}\exp\left[ -\frac{Q}{R}\left( \frac{1}{\Theta_{k-1}}-\frac{1}{\Theta_{B}}\right) \right].\nonumber
+\end{eqnarray} 
+\end{minipage}
+
+On the other hand the linear elastic work tool is modelled wit BEM using the  boundary integral operators as in \ref{sec:BEMBEM}.
+
+Substituting linearized version of  (\ref{DotP}) in (\ref{DiscrWeakMech}) we obtain linear system for $\bv{v}^{i}_{kh}$.
+
+
+The applicability of our approach is demonstrated in the following by several benchmark simulations.
+
+\subsection{Benchmarks}\label{sec:Benchmarks_HyperElasto_VP}
+\textbf{Example 1. Tensile test: 1-Body}
+
+ \begin{tabular}[t]{ccc}
+$\Omega_{t_{k-1}}$ & $x_k^{\sl}=x^{\sl}_{k-1}+u^{\sl}_k$ & $\Omega_{t_{k}} $  \\
+
+& \begin{minipage}[b]{2.0cm}
+\resizebox{2.0cm}{!}{\includegraphics*{/home/gein/Documents/tex/SPP1180/Kolloquium.7_8.Juni/pointer.eps}}
+\end{minipage}
+& \\
+\begin{minipage}[b]{4.5cm}
+\resizebox{4.5cm}{!}{\includegraphics*{/home/gein/Documents/tex/SPP1180/Kolloquium.7_8.Juni/geometry.zugversuch.k_1.eps}}
+\end{minipage}
+&
+\begin{minipage}[c]{2.0cm}
+\begin{center}
+\vspace*{-4cm}
+Updated 
+
+Lagrange
+\end{center}
+
+\end{minipage}
+
+& \begin{minipage}[b]{4.5cm}
+\resizebox{4.5cm}{!}{\includegraphics*{/home/gein/Documents/tex/SPP1180/Kolloquium.7_8.Juni/geometry.zugversuch.k.[en].eps}}
+\end{minipage}
+ \end{tabular}
+\vspace*{-10mm}
+\begin{center}
+\begin{minipage}[c]{6.0cm}
+\resizebox{6.0cm}{!}{\includegraphics*[angle=270]{/home/gein/Documents/tex/SPP1180/Kolloquium.7_8.Juni/stressdev_midpoint.fem.update.elems.SPP1180.ps}}
+\centerline{\it  }
+\end{minipage}$\Delta t =10^{-3}~s$
+\end{center}
+Comparison of interface and contact modeling for viscoplastic material. We  use both FEM and BEM (but without Lagrangian update) \cite{CGMS06pr80}.
+\begin{figure}[h]
+\begin{minipage}[c]{6cm}
+\begin{center}
+\includegraphics[width=3.5cm]{/home/gein/Documents/tex/SPP1180/Kolloquium.7_8.Juni/geometry.2body.hart.interface.[en].eps}
+
+	\includegraphics[angle=270,width=6cm]{002.stressdev_midpoint.elems.ps}
+\end{center}
+\end{minipage}\hfill
+\begin{minipage}[c]{6cm}
+\begin{center}
+\includegraphics[width=3.5cm]{/home/gein/Documents/tex/SPP1180/Kolloquium.7_8.Juni/geometry.2body.hart.contact.[en].eps}
+
+	\includegraphics[angle=270,width=6cm]{001.stressdev_midpoint.elems.ps}
+\end{center}
+\end{minipage}
+\end{figure}
+
+% Time stepping process ( \ref{DiscrWeakMech}, \ref{DiscrWeakHeat}) describing metall chipping.
+\textbf{Example 2. Metal chipping}
+In this section we consider an application of the FEM/BEM coupling on the metal chipping processes. Each body is discretized with finite elements: rectangles in work piece and triangles in work tool. We use Finite Element Method for approximating the displacement field with continuous piecewise bilinear shape functions in work piece and Boundary Element method for approximating the displacement field with continuous piecewise linear shape functions on the boundary of the  work tool. This choice is quite reasonable, since the work tool in practice undergoes quite small deformations with respect to work piece. Therefore, we choose BEM for describing nearly linear deformations in work tool. For reasons of simplicity we use FE approach for  the temperature field and approximate it with piecewise bilinear/linear functions in the work piece/tool respectively. We should mention that a replacement of a discretization procedure for temperaure could be done in the same manner like for mechanical part. The Figure \ref{fig:MetalChipingModelProblem} shows the  model problem geometry. We introduce a prescribed line, that goes through the work piece, in order to simulate the material separation in work piece along the crack line, that is not known a-priori and actually has to be  obtained. We will  call the prescribed line \textit{crack line}. Introducing the  \textit{crack line} we overcome a difficulty with determining the actual propagation path of the crack. But it is quite natural to expect that crack will propagate along the horizontal line in case of horizontally moving work tool from the right to the left (see Figure \ref{fig:MetalChipingModelProblem}). This approach can be considered as the zero order approximation to the real case. The linear system within each fix point step is solved using the Conjugate Gradient method with the diagonal preconditioner. In average we need 2-3 fix point iterations pro time step.
+% \begin{figure}[h]
+% \begin{center}
+% \begin{minipage}[c]{6cm}
+% \includegraphics[scale=0.4]{\benchmarkMetalChipping/versch.deformedmesh.16.8.1.eps}  
+% \caption{Discretized initial configuration}\label{fig:MetalChipingInitialMesh}
+% \end{minipage}
+% \end{center}
+% \end{figure}
+
+% \clearpage
+
+\begin{figure}[h]
+\begin{minipage}[c]{6cm}
+\includegraphics[scale=0.4]{\benchmarkMetalChipping/bilde/stressdev.16.8.20.eps}
+(a){20 time-steps}
+\end{minipage}
+\begin{minipage}[c]{6cm}
+\includegraphics[scale=0.4]{\benchmarkMetalChipping/bilde/stressdev.16.8.40.eps}
+(b){40 time-steps}
+\end{minipage}
+
+\begin{minipage}[c]{6cm}
+\includegraphics[scale=0.4]{\benchmarkMetalChipping/bilde/stressdev.16.8.60.eps}
+(c){60 time-steps}
+\end{minipage}
+\begin{minipage}[c]{6cm}
+\includegraphics[scale=0.4]{\benchmarkMetalChipping/bilde/stressdev.16.8.80.eps}
+(d){80 time-steps}
+\end{minipage}
+
+\begin{minipage}[c]{6cm}
+\includegraphics[scale=0.4]{\benchmarkMetalChipping/bilde/stressdev.16.8.100.eps}
+(e){100 time-steps}
+\end{minipage}
+\begin{minipage}[c]{6cm}
+\includegraphics[scale=0.4]{\benchmarkMetalChipping/bilde/stressdev.16.8.120.eps}
+(f){120 time-steps}
+\end{minipage}
+
+\begin{minipage}[c]{6cm}
+\includegraphics[scale=0.4]{\benchmarkMetalChipping/bilde/stressdev.16.8.140.eps}
+(g){140 time-steps}
+\end{minipage}
+\begin{minipage}[c]{6cm}
+\includegraphics[scale=0.4]{\benchmarkMetalChipping/bilde/stressdev.16.8.160.eps}
+(h){160 time-steps}
+\end{minipage}
+
+\begin{minipage}[c]{6cm}
+\includegraphics[scale=0.4]{\benchmarkMetalChipping/bilde/stressdev.16.8.180.eps}
+(i){180 time-steps}
+\end{minipage}
+\begin{minipage}[c]{6cm}
+\includegraphics[scale=0.4]{\benchmarkMetalChipping/versch.deformedmesh.16.8.1.eps}  
+(j){Discretized initial configuration}
+\end{minipage}
+\caption{Metal chipping}\label{fig:MetalChipingEvolution}
+\end{figure}
+
+On the Figure \ref{fig:MetalChipingEvolution}(j) depicted the initial mesh. 
+The  Cartesian norm of stress deviator ($\|\dev \bv{\sigma}\|:=\sqrt{\Sum_{j,i=1}^{3}(\dev \bv{\sigma}})^2_{ij}$) in both bodies is presented on Figure \ref{fig:MetalChipingEvolution}(a)-(i) for different time-steps.. 
