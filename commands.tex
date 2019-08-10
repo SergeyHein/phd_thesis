@@ -1,0 +1,144 @@
+\newcommand{\A}{{\mathbb A}}
+\newcommand{\B}{{\mathbb B}}
+\newcommand{\C}{{\mathbb C}}
+\newcommand{\D}{{\mathbb D}}
+\newcommand{\G}{{\mathbb G}}
+% \newcommand{\H}{{\mathbb H}}
+\newcommand{\K}{{\mathbb K}}
+\newcommand{\N}{{\mathbb N}}
+\newcommand{\R}{{\mathbb R}}
+\newcommand{\I}{{\mathbb I}}
+\newcommand{\T}{\mathop{\rm T}\limits}
+\newcommand{\Div}{\mathop{\rm Div}\nolimits}
+\renewcommand{\div}{\mathop{\rm div}\nolimits}
+\newcommand{\dom}{\mathop{\rm dom}\nolimits}
+\newcommand{\dev}{\mathop{\rm dev}\nolimits}
+\newcommand{\grad}{\mathop{\rm grad}\nolimits}
+\newcommand{\tr}{\mathop{\rm tr}\nolimits}
+\newcommand{\esssup}{\mathop{\rm esssup}\limits}
+% \newcommand{\tstep}{{\rm k}}
+% \newcommand{\tstep}{\kappa}
+\newcommand{\tstep}{{\Delta t}}
+\renewcommand{\TH}{\Pi}
+
+\theoremstyle{plain}
+%  \newtheorem{definition}{Definition}[section]
+%  \newtheorem{problem}{Problem}[section]
+% \newtheorem{thm}{Theorem}[section]
+%  \newtheorem{lemma}{Lemma}[section]
+\newtheorem{conjecture}{Conjecture}[section]
+\newtheorem{BOX}{Box}[section]
+\newtheorem{alg}{Algorithm}[section]
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}[section]
+
+
+\renewenvironment{proof}{{\bf Proof. }}{\qed}
+\newenvironment{prob}[1]{{\bf Problem {#1}}}{}
+
+
+
+
+
+
+
+\newcommand{\bv}[1]{\mbox{\boldmath$#1$}}
+\newcommand{\jaum}[1]{\stackrel{*}{#1}}
+\newcommand{\given}[1]{\hat{#1}}
+\newcommand{\fictional}[1]{\breve{#1}}
+\newcommand{\actgrad}{\nabla}
+\newcommand{\refgrad}{\stackrel{\circ}{\nabla}}
+\newcommand{\yieldf}{\phi}
+\newcommand{\GeneralizedStressesSpace}{P}
+\newcommand{\StressesYieldRegion}{\mathcal{P}}
+\newcommand{\GeneralizedStrainsSpace}{K}
+\newcommand{\tVar}[1]{{}^t\!#1}
+\newcommand{\hSpace}[1]{{}^h\!#1}
+\newcommand{\tSpace}[1]{{}^{k}\!#1}
+\newcommand{\thSpace}[1]{{}^{kh}\!#1}
+\newcommand{\LMSpace}{\mathcal{M}}
+\newcommand{\VolumePartition}{{\mathsf T}}
+\newcommand{\BoundaryPartition}{{\mathcal T}}
+\newcommand{\TimePartition}{{\mathcal I}}
+\newcommand{\gap}{\mathrm{g}}
+\newcommand{\LameFundamentalSolution}{\mathcal{G}}
+\newcommand{\Sum}{\sum\limits}
+
+% \newcommand{\cn}{n}
+% \newcommand{\ct}{\tau}
+\newcommand{\cn}{{\mathcal{N}}}
+\newcommand{\ct}{{\mathcal{T}}}
+%  \newcommand{\ct}{{\mathrm a}}
+
+\renewcommand{\sl}{B}
+\newcommand{\ms}{A}
+\newcommand{\cont}{C}
+
+\newcommand{\e}{\varepsilon}
+\newcommand{\sign}{\mathop{\rm sign}\nolimits}
+
+\newcommand{\cV}{\mathcal V}
+\newcommand{\cT}{{\mathcal T}}
+
+
+
+\newcommand{\nequiv}{{\equiv\!\!\!\!\!/\,}}
+\newcommand{\cA}{{\cal A}}
+\newcommand{\cB}{{\cal B}}
+\newcommand{\cD}{{\cal D}}
+\newcommand{\cF}{{\cal F}}
+\newcommand{\cG}{{\cal G}}
+\newcommand{\cH}{{\cal H}}
+\newcommand{\cI}{{\cal I}}
+\newcommand{\cJ}{{\cal J}}
+\newcommand{\cK}{{\cal K}}
+\newcommand{\cL}{{\cal L}}
+\newcommand{\cO}{{\cal O}}
+\newcommand{\cP}{{\cal P}}
+\newcommand{\cQ}{{\cal Q}}
+\newcommand{\cR}{{\cal R}}
+\newcommand{\cS}{{\cal S}}
+\newcommand{\cU}{{\cal U}}
+
+\newcommand{\Hb}{\mathbf{H}}
+\newcommand{\Hr}{\mathrm{H}}
+
+\newcommand{\Int}{\int\limits}
+\newcommand{\Lim}{\lim\limits}
+\newcommand{\Min}{\min\limits}
+
+\newcommand{\bF}{\overline F}
+\newcommand{\mF}{\tilde F}
+\newcommand{\bP}{\overline P}
+\newcommand{\mP}{\tilde P}
+\newcommand{\mg}{\mathrm g}
+\newcommand{\NP}{\Sigma}
+
+\newcommand{\bcV}{\overline {\mathcal V}}
+\newcommand{\mcV}{\tilde {\mathcal V}}
+\newcommand{\bcW}{\overline {\mathcal W}}
+\newcommand{\bcT}{\overline {\mathcal T}}
+
+% \newcommand{\biH}{{\mbox{\boldmath$ \mathit H$}}}
+% \newcommand{\bbH}{{\mbox{\boldmath$H$}}}
+
+\newcommand{\pyi}{\frac{\partial}{\partial y_i}}
+\newcommand{\pyk}{\frac{\partial}{\partial y_k}}
+\newcommand{\pyl}{\frac{\partial}{\partial y_l}}
+
+
+
+\newcount\hour \newcount\minute \newcount\temp
+\hour=\time
+\divide \hour by 60
+\minute=\time
+\temp=\hour
+\multiply \temp by -60
+\advance \minute by \temp
+\newcommand{\daytime}{%
+   \ifnum\hour=0 00\else\ifnum\hour<10 0\fi%
+   \number\hour\fi:%
+  \ifnum\minute<10 0\fi\number\minute%
+}
+
